@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collections | Madni Wooden Legacy</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container header-flex">
+            <div class="logo">
+                <a href="index.html">
+                    <h1>Madni <span class="gold">Wooden Legacy</span></h1>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="collections.html" class="active">Collections</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#" id="theme-toggle"><i class="fas fa-moon"></i></a></li>
+                </ul>
+            </nav>
+            <div class="mobile-extras">
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="section" style="padding-top:120px; text-align:center; background:#f9f9f9; margin-bottom:40px;">
+        <div class="container">
+            <h2>Our Collections</h2>
+            <p style="max-width:600px; margin:0 auto; color:#666;">Explore our range of premium handcrafted woodwork.
+            </p>
+        </div>
+    </div>
+
+    <section class="container" style="min-height:60vh;">
+        <!-- Filters -->
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="doors">Doors</button>
+            <button class="filter-btn" data-filter="kitchens">Kitchens</button>
+            <button class="filter-btn" data-filter="wardrobes">Wardrobes</button>
+            <button class="filter-btn" data-filter="furniture">Furniture</button>
+        </div>
+
+        <!-- Grid -->
+        <div class="grid-3" id="collection-grid">
+            <!-- Populated by JS -->
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>Madni Wooden Legacy</h3>
+                    <p>Main Boulevard, Lahore</p>
+                </div>
+                <div class="copyright">
+                    &copy; 2024 Madni Wooden Legacy.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

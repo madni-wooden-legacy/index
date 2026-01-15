@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details | Madni Wooden Legacy</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container header-flex">
+            <div class="logo">
+                <a href="index.html">
+                    <h1>Madni <span class="gold">Wooden Legacy</span></h1>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="collections.html">Collections</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-extras">
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="section project-content">
+        <div class="container">
+            <div class="project-header">
+                <a href="collections.html"
+                    style="font-size:0.9rem; color:#888; display:block; margin-bottom:10px;">&larr; Back to
+                    Collections</a>
+                <h2 id="p-title" style="font-size:2.5rem; margin-bottom:10px;">Project Title</h2>
+                <span id="p-category"
+                    style="background:var(--color-accent); color:white; padding:4px 12px; font-size:0.8rem; border-radius:20px;">Category</span>
+            </div>
+
+            <div class="project-details-grid">
+                <!-- Gallery Section -->
+                <div>
+                    <h3 style="margin-bottom:20px;">Gallery</h3>
+                    <div class="gallery-grid" id="p-gallery">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Info Sidebar -->
+                <div class="detail-sidebar">
+                    <h3 style="margin-bottom:20px;">Project Overview</h3>
+                    <p id="p-desc" style="margin-bottom:30px; line-height:1.7; color:var(--color-text);">
+                        Description goes here...
+                    </p>
+
+                    <h4
+                        style="font-size:1.1rem; margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
+                        Specifications</h4>
+                    <ul id="p-details">
+                        <!-- Populated by JS -->
+                    </ul>
+
+                    <div style="margin-top:40px; text-align:center;">
+                        <a href="#" id="wa-inquiry" class="btn btn-gold" style="width:100%;">
+                            <i class="fab fa-whatsapp"></i> Inquire Price
+                        </a>
+                        <p style="font-size:0.8rem; margin-top:10px; color:#888;">Quote Reference: <span
+                                id="p-ref">#WEB</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>Madni Wooden Legacy</h3>
+                </div>
+                <div class="copyright">
+                    &copy; 2024 Madni Wooden Legacy.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
