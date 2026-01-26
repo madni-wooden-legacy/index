@@ -9,10 +9,13 @@ const GITHUB_TOKEN = 'ghp_5xWnH113B5OosW5irzgSNzJ3CGdxOU1tQIUD';
 // This function runs automatically every day
 function updateWebsiteData() {
     try {
-        // 1. Get data from Drive
+        // 1. Get data from Drive (This handles uploads)
         const projectsData = generateProjectsData();
 
-        // 2. Create the data.js file content
+        // 2. Synchronize Deletions (Remove from YT if deleted from Drive)
+        syncYouTubeDeletions(projectsData);
+
+        // 3. Create the data.js file content
         const fileContent = `/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
  * Last updated: ${new Date().toISOString()}
@@ -22,7 +25,7 @@ function updateWebsiteData() {
 let projects = ${JSON.stringify(projectsData, null, 2)};
 `;
 
-        // 3. Update the file on GitHub
+        // 4. Update the file on GitHub
         updateGitHubFile('js/data.js', fileContent);
 
         console.log('✅ SUCCESS: Website data updated at ' + new Date());
@@ -56,21 +59,24 @@ function getAllFilesRecursive(folder) {
                 youtubeId = uploadFileToYouTube(f.getId(), f.getName());
                 if (youtubeId) {
                     setYoutubeIdInDescription(f, youtubeId);
+                    // Add to tracker
+                    updateSyncTracker(f.getId(), youtubeId);
                 }
             }
 
             if (youtubeId) {
                 foundFiles.push({
-                    url: youtubeId, // We'll store the ID here
-                    type: "youtube", // Clarify it's a youtube ID
-                    mime: mime
+                    url: youtubeId,
+                    type: "youtube",
+                    mime: mime,
+                    driveId: f.getId() // Add for sync tracking
                 });
             } else {
-                // Fallback to Drive URL if YouTube failed
                 foundFiles.push({
                     url: "https://lh3.googleusercontent.com/d/" + f.getId(),
                     type: "video",
-                    mime: mime
+                    mime: mime,
+                    driveId: f.getId()
                 });
             }
         }
@@ -80,6 +86,13 @@ function getAllFilesRecursive(folder) {
         foundFiles = foundFiles.concat(getAllFilesRecursive(subFolders.next()));
     }
     return foundFiles;
+}
+
+function updateSyncTracker(driveId, youtubeId) {
+    const props = PropertiesService.getScriptProperties();
+    const tracking = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
+    tracking[driveId] = youtubeId;
+    props.setProperty('YT_SYNC_MAP', JSON.stringify(tracking));
 }
 
 /**
@@ -118,13 +131,57 @@ function getYoutubeIdFromDescription(file) {
     }
     return null;
 }
-
 function setYoutubeIdInDescription(file, youtubeId) {
     file.setDescription('youtube:' + youtubeId);
 }
 
+/**
+ * Ensures YouTube channel stays in sync with Drive.
+ * Deletes videos from YouTube that were removed from Drive.
+ */
+function syncYouTubeDeletions(projectsData) {
+    const props = PropertiesService.getScriptProperties();
+    const tracking = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
+
+    // 1. Get all Drive File IDs currently in the website data
+    const currentDriveIds = new Set();
+    projectsData.forEach(p => {
+        if (p.media) {
+            p.media.forEach(m => {
+                // If it's a youtube type, we need to know WHICH drive file it came from
+                // We'll update the data generation to include driveId for this reason
+            });
+        }
+    });
+
+    // REVISED APPROACH: We scan all Drive IDs discovered during this run.
+    // Let's pass the discovered IDs to this function.
+    const discoveredDriveIds = GLOBAL_DISCOVERED_DRIVE_IDS || [];
+
+    // 2. Find IDs in our tracker that are NOT in Drive anymore
+    const deadDriveIds = Object.keys(tracking).filter(id => !discoveredDriveIds.includes(id));
+
+    deadDriveIds.forEach(driveId => {
+        const ytId = tracking[driveId];
+        console.log('🗑️ Deleting orphan video from YouTube: ' + ytId);
+        try {
+            YouTube.Videos.remove(ytId);
+            delete tracking[driveId];
+        } catch (e) {
+            console.error('❌ Failed to delete video ' + ytId + ': ' + e.toString());
+            // If it's already deleted or 404, remove from tracker anyway
+            if (e.toString().includes('404')) delete tracking[driveId];
+        }
+    });
+
+    props.setProperty('YT_SYNC_MAP', JSON.stringify(tracking));
+}
+
+let GLOBAL_DISCOVERED_DRIVE_IDS = []; // Track files found in current run
+
 // Generate projects data from Drive
 function generateProjectsData() {
+    GLOBAL_DISCOVERED_DRIVE_IDS = []; // Reset
     const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
     const categories = root.getFolders();
     let projects = [];
@@ -133,21 +190,16 @@ function generateProjectsData() {
         let catFolder = categories.next();
         let catName = catFolder.getName().toLowerCase();
 
-        // Now gets objects {url, type} instead of just strings
         let allFiles = getAllFilesRecursive(catFolder);
 
         if (allFiles.length > 0) {
-            // Split for backward compatibility or use mixed array
-            // Let's use a mixed array but map it for the frontend
-            // The frontend expects "images" to be an array of strings usually
-            // We will change the front end to handle objects, OR we can cheat:
-            // We will keep 'images' as just URLs for backward compatibility (if needed)
-            // BUT we'll add a 'media' field which is better
-
-            let mediaList = allFiles.map(f => ({
-                src: f.url,
-                type: f.type
-            }));
+            let mediaList = allFiles.map(f => {
+                if (f.driveId) GLOBAL_DISCOVERED_DRIVE_IDS.push(f.driveId);
+                return {
+                    src: f.url,
+                    type: f.type
+                };
+            });
 
             // For backward compatibility with old code that expects strings in 'images'
             // We'll just put the URLs there. Frontend will need to detect video extensions or use the new 'media' property.
