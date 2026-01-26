@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
         initHomePageFeatured();
     }
-    initCustomCursor();
 });
 
 const DRIVE_API_URL = 'https://script.google.com/macros/s/AKfycbwcQa_-yKVsrCQyJRiur5DlC6QOo8szn2QzOHhsQFG29YCvTUd2RZD3gkbkXK5N62IHog/exec';
@@ -69,58 +68,7 @@ function fetchProjectsFromDrive(callback) {
 }
 
 
-/* ================= CUSTOM CURSOR Animation ================= */
-function initCustomCursor() {
-    // 1. Create Cursor Element
-    const cursor = document.createElement('div');
-    cursor.id = 'custom-cursor';
-    document.body.appendChild(cursor);
-
-    // 2. State Tracking
-    let mouseX = 0, mouseY = 0;
-    let cursorX = 0, cursorY = 0;
-    const speed = 0.08; // Slower speed for more smooth lag
-
-    // 3. Track Mouse
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
-
-    // 4. Animation Loop
-    function animate() {
-        // Linear Interpolation (Lerp) for smooth trailing
-        cursorX += (mouseX - cursorX) * speed;
-        cursorY += (mouseY - cursorY) * speed;
-
-        cursor.style.left = `${cursorX}px`;
-        cursor.style.top = `${cursorY}px`;
-
-        requestAnimationFrame(animate);
-    }
-    animate();
-
-    // 5. Hover Effects (Expand on links/images)
-    const hoverTargets = document.querySelectorAll('a, button, .project-card, .gallery-item, .cat-card');
-
-    hoverTargets.forEach(target => {
-        target.addEventListener('mouseenter', () => {
-            cursor.classList.add('cursor-hover');
-        });
-        target.addEventListener('mouseleave', () => {
-            cursor.classList.remove('cursor-hover');
-        });
-    });
-
-    // Safety check for dynamic elements (adding a global listener fallback)
-    document.body.addEventListener('mouseover', (e) => {
-        if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.gallery-item') || e.target.closest('.project-card')) {
-            cursor.classList.add('cursor-hover');
-        } else {
-            cursor.classList.remove('cursor-hover');
-        }
-    });
-}
+// Custom cursor removed by user request
 
 
 /* ================= THEME & UI ================= */
@@ -218,14 +166,19 @@ function renderProjects(items) {
         const card = document.createElement('div');
         card.className = 'project-card animate-up';
 
-        // Detect media type
-        let mainMedia = project.images[0];
-        let mediaHtml = '';
-
-        if (isVideo(mainMedia)) {
-            mediaHtml = `<video src="${mainMedia}" autoplay muted loop playsinline style="pointer-events: none;"></video>`;
+        // Use MEDIA object if available, otherwise fallback to images array
+        let mediaItem;
+        if (project.media && project.media.length > 0) {
+            mediaItem = project.media[0];
         } else {
-            mediaHtml = `<img src="${mainMedia}" alt="${project.title}" loading="lazy" onerror="this.style.display='none'">`;
+            mediaItem = { src: project.images[0], type: 'image' };
+        }
+
+        let mediaHtml = '';
+        if (mediaItem.type === 'video') {
+            mediaHtml = `<video src="${mediaItem.src}" autoplay muted loop playsinline style="pointer-events: none;"></video>`;
+        } else {
+            mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy" onerror="this.style.display='none'">`;
         }
 
         card.innerHTML = `
@@ -372,27 +325,31 @@ function initProjectDetails() {
         const grid = document.createElement('div');
         grid.className = 'gallery-grid';
 
-        // Single playlist
-        const projectMedia = project.images;
+        // NORMALIZED PLAYLIST
+        let playlist = [];
+        if (project.media && project.media.length > 0) {
+            playlist = project.media;
+        } else {
+            playlist = project.images.map(url => ({ src: url, type: isVideo(url) ? 'video' : 'image' }));
+        }
 
-        project.images.forEach((src, index) => {
-            const item = document.createElement('div');
-            item.className = 'gallery-item';
+        playlist.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.className = 'gallery-item';
 
             let content = '';
-            if (isVideo(src)) {
-                content = `<video src="${src}" autoplay muted loop playsinline onclick="openLightbox('${src}', ${index}, 'main')"></video>`;
+            if (item.type === 'video') {
+                content = `<video src="${item.src}" autoplay muted loop playsinline onclick="openLightbox(${index}, 'p-gallery')"></video>`;
             } else {
-                content = `<img src="${src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox('${src}', ${index}, 'main')">`;
+                content = `<img src="${item.src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox(${index}, 'p-gallery')">`;
             }
 
-            item.innerHTML = content;
-            grid.appendChild(item);
+            el.innerHTML = content;
+            grid.appendChild(el);
         });
 
-        // Store playlist on container
-        galleryContainer.dataset.playlist = JSON.stringify(projectMedia);
-        galleryContainer.id = 'main'; // Ensure ID exists for reference
+        // Store on p-gallery directly (DO NOT CHANGE ID)
+        galleryContainer.dataset.playlist = JSON.stringify(playlist);
 
         galleryContainer.appendChild(grid);
     }
@@ -519,10 +476,20 @@ function openLightbox(src, index, contextId) {
 
 function updateLightboxContent() {
     const lightbox = document.getElementById('lightbox');
-    const src = currentPlaylist[currentIndex];
+
+    // Safety check
+    if (!currentPlaylist || currentPlaylist.length === 0) return;
+    if (currentIndex < 0) currentIndex = 0;
+    if (currentIndex >= currentPlaylist.length) currentIndex = 0;
+
+    const item = currentPlaylist[currentIndex];
+
+    // Support both string items (legacy) and object items
+    let src = item.src || item;
+    let type = item.type || (isVideo(src) ? 'video' : 'image');
 
     let mediaContent = '';
-    if (isVideo(src)) {
+    if (type === 'video') {
         mediaContent = `<video src="${src}" controls autoplay style="max-width:90%; max-height:80vh; border-radius:4px; box-shadow:0 0 20px rgba(0,0,0,0.5);"></video>`;
     } else {
         mediaContent = `<img src="${src}" alt="Fullscreen View">`;
