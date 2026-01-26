@@ -177,13 +177,16 @@ function renderProjects(items) {
         let mediaHtml = '';
         if (mediaItem.type === 'youtube') {
             const ytId = mediaItem.src;
-            mediaHtml = `<div class="video-container" style="position:relative; width:100%; padding-top:56.25%; background:#000; overflow:hidden;">
-                <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0&controls=0&iv_load_policy=3" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="autoplay" frameborder="0"></iframe>
+            // Use a clickable overlay so the lightbox opens even when clicking the video
+            mediaHtml = `<div class="video-container" style="position:relative; width:100%; height:auto; background:#111; overflow:hidden;">
+                <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0&controls=0&iv_load_policy=3&disablekb=1&fs=0" style="width:100%; aspect-ratio:16/9; border:none;" allow="autoplay" frameborder="0"></iframe>
+                <div class="video-overlay" style="position:absolute; inset:0; z-index:10; cursor:pointer;" onclick="event.preventDefault(); window.location.href='project.html?id=${project.id}'"></div>
             </div>`;
         } else if (mediaItem.type === 'video') {
             const videoUrl = convertToVideoUrl(mediaItem.src, true);
-            mediaHtml = `<div class="video-container" style="position:relative; width:100%; padding-top:56.25%; background:#000; overflow:hidden;">
-                <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="autoplay" frameborder="0"></iframe>
+            mediaHtml = `<div class="video-container" style="position:relative; width:100%; height:auto; background:#111; overflow:hidden;">
+                <iframe src="${videoUrl}" style="width:100%; aspect-ratio:16/9; border:none;" allow="autoplay" frameborder="0"></iframe>
+                <div class="video-overlay" style="position:absolute; inset:0; z-index:10; cursor:pointer;" onclick="event.preventDefault(); window.location.href='project.html?id=${project.id}'"></div>
             </div>`;
         } else {
             mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy" onerror="this.style.display='none'">`;
@@ -317,13 +320,15 @@ function initProjectDetails() {
                 let content = '';
                 if (type === 'youtube') {
                     const ytId = mediaItem.src;
-                    content = `<div class="video-container" style="position:relative; width:100%; padding-top:56.25%; background:#000; overflow:hidden; cursor:pointer;" onclick="openLightbox(${mediaIdx}, 'sec-${idx}')">
-                        <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0&controls=0&iv_load_policy=3" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                    content = `<div class="video-container" style="position:relative; width:100%; height:auto; background:#111; overflow:hidden; cursor:pointer;">
+                        <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0&controls=0&iv_load_policy=3&disablekb=1&fs=0" style="width:100%; aspect-ratio:16/9; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                        <div style="position:absolute; inset:0; z-index:10;" onclick="openLightbox(${mediaIdx}, 'sec-${idx}')"></div>
                     </div>`;
                 } else if (type === 'video') {
                     const videoUrl = convertToVideoUrl(src, true);
-                    content = `<div class="video-container" style="position:relative; width:100%; padding-top:56.25%; background:#000; overflow:hidden; cursor:pointer;" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')">
-                        <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                    content = `<div class="video-container" style="position:relative; width:100%; height:auto; background:#111; overflow:hidden; cursor:pointer;">
+                        <iframe src="${videoUrl}" style="width:100%; aspect-ratio:16/9; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                        <div style="position:absolute; inset:0; z-index:10;" onclick="openLightbox(${mediaIdx}, 'sec-${idx}')"></div>
                     </div>`;
                 } else {
                     content = `<img src="${src}" alt="${sec.title}" loading="lazy" onclick="openLightbox(${mediaIdx}, 'sec-${idx}')" onerror="this.parentElement.style.display='none'">`;
@@ -360,13 +365,15 @@ function initProjectDetails() {
             let content = '';
             if (item.type === 'youtube') {
                 const ytId = item.src;
-                content = `<div class="video-container" style="position:relative; width:100%; padding-top:56.25%; background:#000; overflow:hidden; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')">
-                    <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0&controls=0&iv_load_policy=3" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                content = `<div class="video-container" style="position:relative; width:100%; height:auto; background:#111; overflow:hidden; cursor:pointer;">
+                    <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0&controls=0&iv_load_policy=3&disablekb=1&fs=0" style="width:100%; aspect-ratio:16/9; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                    <div style="position:absolute; inset:0; z-index:10;" onclick="openLightbox(${index}, 'p-gallery')"></div>
                 </div>`;
             } else if (item.type === 'video') {
                 const videoUrl = convertToVideoUrl(item.src, true);
-                content = `<div class="video-container" style="position:relative; width:100%; padding-top:56.25%; background:#000; overflow:hidden; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')">
-                    <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                content = `<div class="video-container" style="position:relative; width:100%; height:auto; background:#111; overflow:hidden; cursor:pointer;">
+                    <iframe src="${videoUrl}" style="width:100%; aspect-ratio:16/9; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                    <div style="position:absolute; inset:0; z-index:10;" onclick="openLightbox(${index}, 'p-gallery')"></div>
                 </div>`;
             } else {
                 content = `<img src="${item.src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox(${index}, 'p-gallery')">`;
@@ -534,10 +541,10 @@ function updateLightboxContent() {
     let mediaContent = '';
     if (type === 'youtube') {
         const ytId = src;
-        mediaContent = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0" style="width:90%; height:80vh; border:none; border-radius:4px; box-shadow:0 0 20px rgba(0,0,0,0.5);" allow="autoplay" frameborder="0"></iframe>`;
+        mediaContent = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0&iv_load_policy=3" style="width:90vw; height:80vh; aspect-ratio:16/9; border:none; border-radius:4px; box-shadow:0 0 20px rgba(0,0,0,0.5);" allow="autoplay" frameborder="0"></iframe>`;
     } else if (type === 'video') {
         const videoUrl = convertToVideoUrl(src, false);
-        mediaContent = `<iframe src="${videoUrl}" style="width:90%; height:80vh; border:none; border-radius:4px; box-shadow:0 0 20px rgba(0,0,0,0.5);" allow="autoplay" frameborder="0"></iframe>`;
+        mediaContent = `<iframe src="${videoUrl}" style="width:90vw; height:80vh; aspect-ratio:16/9; border:none; border-radius:4px; box-shadow:0 0 20px rgba(0,0,0,0.5);" allow="autoplay" frameborder="0"></iframe>`;
     } else {
         mediaContent = `<img src="${src}" alt="Fullscreen View">`;
     }

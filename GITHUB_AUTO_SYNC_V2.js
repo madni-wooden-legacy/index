@@ -6,10 +6,22 @@ const GITHUB_REPO_OWNER = 'Mohid-Abbas';
 const GITHUB_REPO_NAME = 'MadniWoodenLegacy';
 const GITHUB_TOKEN = 'ghp_5xWnH113B5OosW5irzgSNzJ3CGdxOU1tQIUD';
 
+// Stats for Email
+let STATS = {
+    newUploads: 0,
+    skipped: 0,
+    deleted: 0,
+    images: 0,
+    errors: 0
+};
+
 // This function runs automatically every day
 function updateWebsiteData() {
     try {
-        // 1. Get data from Drive (This handles uploads)
+        // Reset Stats
+        STATS = { newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0 };
+
+        // 1. Get data from Drive (This handles uploads and physical renaming)
         const projectsData = generateProjectsData();
 
         // 2. Synchronize Deletions (Remove from YT if deleted from Drive)
@@ -18,7 +30,7 @@ function updateWebsiteData() {
         // 3. Create the data.js file content
         const fileContent = `/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Last updated: ${new Date().toISOString()}
+ * Last updated: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' })} (Pakistan Time)
  * Auto-synced from Google Drive
  */
 
@@ -28,11 +40,47 @@ let projects = ${JSON.stringify(projectsData, null, 2)};
         // 4. Update the file on GitHub
         updateGitHubFile('js/data.js', fileContent);
 
+        // 5. Send Status Email
+        sendStatusEmail();
+
         console.log('✅ SUCCESS: Website data updated at ' + new Date());
 
     } catch (e) {
         console.error('❌ ERROR: ' + e.toString());
+        sendErrorEmail(e.toString());
     }
+}
+
+function sendStatusEmail() {
+    const recipient = Session.getActiveUser().getEmail();
+    const subject = "🚀 Madni Website Sync Report: " + new Date().toLocaleDateString();
+
+    const body = `
+SYNC STATUS REPORT
+------------------
+Date: ${new Date().toLocaleString()} (Pakistan Time)
+
+- Total New Videos Uploaded: ${STATS.newUploads}
+- Videos Skipped (Already Sync): ${STATS.skipped}
+- Dead Videos Deleted from YT: ${STATS.deleted}
+- Total Images Processed: ${STATS.images}
+- Encountered Errors: ${STATS.errors}
+
+Website Status: ✅ UPDATED & LIVE
+GitHub Repo: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}
+YouTube Channel: Your Channel (Unlisted)
+
+The next sync is scheduled for tomorrow at 3:00 AM.
+  `;
+
+    MailApp.sendEmail(recipient, subject, body);
+}
+
+function sendErrorEmail(errMsg) {
+    const recipient = Session.getActiveUser().getEmail();
+    const subject = "⚠️ Madni Website Sync FAILED";
+    const body = "The sync failed with the following error:\n\n" + errMsg;
+    MailApp.sendEmail(recipient, subject, body);
 }
 
 // Helper function to simply COLLECT all image and video file objects
@@ -65,10 +113,6 @@ function updateSyncTracker(driveId, youtubeId) {
     props.setProperty('YT_SYNC_MAP', JSON.stringify(tracking));
 }
 
-/**
- * Uploads a video from Google Drive to YouTube (Unlisted)
- * Requires YouTube Data API v3 Service to be enabled
- */
 /**
  * Uploads a video from Google Drive to YouTube (Unlisted)
  * Requires YouTube Data API v3 Service to be enabled
@@ -130,10 +174,6 @@ function setYoutubeIdInDescription(file, youtubeId) {
  * Ensures YouTube channel stays in sync with Drive.
  * Deletes videos from YouTube that were removed from Drive.
  */
-/**
- * Ensures YouTube channel stays in sync with Drive.
- * Deletes videos from YouTube that were removed from Drive.
- */
 function syncYouTubeDeletions() {
     const props = PropertiesService.getScriptProperties();
     const tracking = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
@@ -150,6 +190,7 @@ function syncYouTubeDeletions() {
         try {
             YouTube.Videos.remove(ytId);
             delete tracking[driveId];
+            STATS.deleted++;
         } catch (e) {
             console.error('❌ Failed to delete video ' + ytId + ': ' + e.toString());
             // If it's already deleted or 404, remove from tracker anyway
@@ -179,6 +220,7 @@ function generateProjectsData() {
 
         if (collectedFiles.length > 0) {
             let mediaList = [];
+            console.log(`📂 Processing Category: ${catRealName} (${collectedFiles.length} files)`);
 
             // 2. Process each file with a serial number
             collectedFiles.forEach((item, index) => {
@@ -190,6 +232,16 @@ function generateProjectsData() {
                 const serialNum = (index + 1).toString().padStart(2, '0');
                 const serialTitle = `${catRealName} - ${serialNum}`;
 
+                // PHYSICAL RENAMING IN DRIVE
+                const extension = getFileExtension(f.getName());
+                const driveName = serialTitle + (extension ? "." + extension : "");
+                if (f.getName() !== driveName) {
+                    try {
+                        f.setName(driveName);
+                        if (index % 5 === 0) console.log(`   📝 Renaming: ${serialTitle}...`);
+                    } catch (err) { console.warn("Could not rename file in Drive: " + driveId); }
+                }
+
                 if (item.is_video) {
                     let youtubeId = getYoutubeIdFromDescription(f);
 
@@ -199,16 +251,20 @@ function generateProjectsData() {
                         if (youtubeId) {
                             setYoutubeIdInDescription(f, youtubeId);
                             updateSyncTracker(driveId, youtubeId);
-                        }
+                            STATS.newUploads++;
+                        } else { STATS.errors++; }
+                    } else if (youtubeId) {
+                        STATS.skipped++;
                     }
 
                     if (youtubeId) {
-                        mediaList.push({ src: youtubeId, type: "youtube" });
+                        mediaList.push({ src: youtubeId, type: "youtube", title: serialTitle });
                     } else {
-                        mediaList.push({ src: "https://lh3.googleusercontent.com/d/" + driveId, type: "video" });
+                        mediaList.push({ src: "https://lh3.googleusercontent.com/d/" + driveId, type: "video", title: serialTitle });
                     }
                 } else {
                     // It's an image
+                    STATS.images++;
                     mediaList.push({ src: "https://lh3.googleusercontent.com/d/" + driveId, type: "image", title: serialTitle });
                 }
             });
@@ -263,4 +319,9 @@ function updateGitHubFile(filePath, content) {
     };
 
     UrlFetchApp.fetch(url, updateOptions);
+}
+
+function getFileExtension(filename) {
+    const parts = filename.split('.');
+    return parts.length > 1 ? parts.pop() : "";
 }
