@@ -725,64 +725,33 @@ footer {
     }
 }
 
-/* ================= CUSTOM CURSOR ================= */
-#custom-cursor {
-    position: fixed;
+/* ================= VIDEO CONTAINERS ================= */
+.video-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    overflow: hidden;
+    border-radius: var(--radius);
+}
+
+.video-container iframe {
+    position: absolute;
     top: 0;
     left: 0;
-    width: 20px;
-    height: 20px;
-    background-color: var(--color-primary);
-    /* Changed to Main Color */
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    transform: translate(-50%, -50%);
-    transition: width 0.3s, height 0.3s, background-color 0.3s, opacity 0.2s;
-    /* Added opacity transition */
-    mix-blend-mode: normal;
-    /* Removed difference to keep consistent color */
-    display: flex;
-    /* For arrow alignment */
-    align-items: center;
-    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
-/* Hide Cursor in Header */
-/* Hide Cursor in Header and over Text */
-header:hover~#custom-cursor,
-.main-nav:hover~#custom-cursor,
-h1:hover~#custom-cursor,
-h2:hover~#custom-cursor,
-h3:hover~#custom-cursor,
-h4:hover~#custom-cursor,
-p:hover~#custom-cursor,
-span:hover~#custom-cursor {
-    opacity: 0;
+/* Specific fix for vertical videos if they exist (can be modified per item if needed) */
+.gallery-item.vertical .video-container {
+    aspect-ratio: 9 / 16;
 }
 
-#custom-cursor.cursor-hover {
-    width: 60px;
-    height: 60px;
-    background-color: rgba(30, 30, 30, 0.9);
-    /* Dark background for ease of reading arrow */
-    backdrop-filter: blur(2px);
-}
-
-#custom-cursor.cursor-hover::after {
-    content: '\f061';
-    /* FontAwesome arrow-right code */
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-    color: white;
-    font-size: 1.5rem;
-    display: block;
-}
-
-/* Hide default cursor only when strictly required on interactive elements */
-a,
-button,
-.project-card,
-.gallery-item {
-    cursor: none;
+/* Responsive fixes */
+@media (max-width: 768px) {
+    .project-grid {
+        grid-template-columns: 1fr;
+    }
 }

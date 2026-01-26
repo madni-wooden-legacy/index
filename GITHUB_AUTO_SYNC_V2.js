@@ -41,12 +41,38 @@ function getAllFilesRecursive(folder) {
         let mime = f.getMimeType();
 
         // Check for IMAGE or VIDEO
-        if (mime.includes("image") || mime.includes("video")) {
+        if (mime.includes("image")) {
             foundFiles.push({
                 url: "https://lh3.googleusercontent.com/d/" + f.getId(),
-                type: mime.includes("video") ? "video" : "image",
+                type: "image",
                 mime: mime
             });
+        } else if (mime.includes("video")) {
+            // Check if already uploaded to YouTube
+            let youtubeId = getYoutubeIdFromDescription(f);
+
+            if (!youtubeId) {
+                console.log('🚀 Uploading new video to YouTube: ' + f.getName());
+                youtubeId = uploadFileToYouTube(f.getId(), f.getName());
+                if (youtubeId) {
+                    setYoutubeIdInDescription(f, youtubeId);
+                }
+            }
+
+            if (youtubeId) {
+                foundFiles.push({
+                    url: youtubeId, // We'll store the ID here
+                    type: "youtube", // Clarify it's a youtube ID
+                    mime: mime
+                });
+            } else {
+                // Fallback to Drive URL if YouTube failed
+                foundFiles.push({
+                    url: "https://lh3.googleusercontent.com/d/" + f.getId(),
+                    type: "video",
+                    mime: mime
+                });
+            }
         }
     }
     let subFolders = folder.getFolders();
@@ -54,6 +80,47 @@ function getAllFilesRecursive(folder) {
         foundFiles = foundFiles.concat(getAllFilesRecursive(subFolders.next()));
     }
     return foundFiles;
+}
+
+/**
+ * Uploads a video from Google Drive to YouTube (Unlisted)
+ * Requires YouTube Data API v3 Service to be enabled
+ */
+function uploadFileToYouTube(fileId, title) {
+    try {
+        const file = DriveApp.getFileById(fileId);
+        const blob = file.getBlob();
+
+        const resource = {
+            snippet: {
+                title: title || file.getName(),
+                description: 'Uploaded automatically from Madni Wooden Legacy Gallery',
+                categoryId: '22' // People & Blogs
+            },
+            status: {
+                privacyStatus: 'unlisted' // As requested
+            }
+        };
+
+        // This is the call that requires the YouTube Service
+        const video = YouTube.Videos.insert(resource, 'snippet,status', blob);
+        return video.id;
+    } catch (e) {
+        console.error('❌ YouTube Upload Failed: ' + e.toString());
+        return null;
+    }
+}
+
+function getYoutubeIdFromDescription(file) {
+    const desc = file.getDescription();
+    if (desc && desc.startsWith('youtube:')) {
+        return desc.split(':')[1];
+    }
+    return null;
+}
+
+function setYoutubeIdInDescription(file, youtubeId) {
+    file.setDescription('youtube:' + youtubeId);
 }
 
 // Generate projects data from Drive
