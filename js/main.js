@@ -176,8 +176,8 @@ function renderProjects(items) {
 
         let mediaHtml = '';
         if (mediaItem.type === 'video') {
-            const videoUrl = convertToVideoUrl(mediaItem.src, true);
-            mediaHtml = `<div class="video-wrapper" style="position:relative; width:100%; padding-top:56.25%; background:#000;"><iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="autoplay" frameborder="0"></iframe></div>`;
+            // Show thumbnail with play icon in grid, iframe only in lightbox
+            mediaHtml = `<div style="position:relative; cursor:pointer;"><img src="${mediaItem.src}" alt="${project.title}" loading="lazy" style="width:100%; display:block;"><div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60px; height:60px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div></div>`;
         } else {
             mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy" onerror="this.style.display='none'">`;
         }
@@ -305,8 +305,8 @@ function initProjectDetails() {
 
                 let content = '';
                 if (isVideo(src)) {
-                    const videoUrl = convertToVideoUrl(src, true);
-                    content = `<div class="video-wrapper" style="cursor:pointer; position:relative; width:100%; padding-top:56.25%; background:#000;" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')"><iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe></div>`;
+                    // Show thumbnail with play icon in grid
+                    content = `<div style="position:relative; cursor:pointer;" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')"><img src="${src}" alt="${sec.title}" loading="lazy" style="width:100%; display:block;"><div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60px; height:60px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:none;"><svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div></div>`;
                 } else {
                     content = `<img src="${src}" alt="${sec.title}" loading="lazy" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')" onerror="this.parentElement.style.display='none'">`;
                 }
@@ -341,8 +341,8 @@ function initProjectDetails() {
 
             let content = '';
             if (item.type === 'video') {
-                const videoUrl = convertToVideoUrl(item.src, true);
-                content = `<div class="video-wrapper" style="cursor:pointer; position:relative; width:100%; padding-top:56.25%; background:#000;" onclick="openLightbox(${index}, 'p-gallery')"><iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe></div>`;
+                // Show thumbnail with play icon in grid
+                content = `<div style="position:relative; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"><img src="${item.src}" alt="${project.title}" loading="lazy" style="width:100%; display:block;"><div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60px; height:60px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:none;"><svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div></div>`;
             } else {
                 content = `<img src="${item.src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox(${index}, 'p-gallery')">`;
             }
