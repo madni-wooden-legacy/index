@@ -177,7 +177,7 @@ function renderProjects(items) {
         let mediaHtml = '';
         if (mediaItem.type === 'video') {
             const videoUrl = convertToVideoUrl(mediaItem.src);
-            mediaHtml = `<video src="${videoUrl}" autoplay muted loop playsinline style="pointer-events: none;"></video>`;
+            mediaHtml = `<iframe src="${videoUrl}" style="width:100%; height:200px; border:none; pointer-events:none;" allow="autoplay"></iframe>`;
         } else {
             mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy" onerror="this.style.display='none'">`;
         }
@@ -306,7 +306,7 @@ function initProjectDetails() {
                 let content = '';
                 if (isVideo(src)) {
                     const videoUrl = convertToVideoUrl(src);
-                    content = `<video src="${videoUrl}" autoplay muted loop playsinline onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')"></video>`;
+                    content = `<iframe src="${videoUrl}" style="width:100%; height:100%; border:none;" allow="autoplay" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')"></iframe>`;
                 } else {
                     content = `<img src="${src}" alt="${sec.title}" loading="lazy" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')" onerror="this.parentElement.style.display='none'">`;
                 }
@@ -342,7 +342,7 @@ function initProjectDetails() {
             let content = '';
             if (item.type === 'video') {
                 const videoUrl = convertToVideoUrl(item.src);
-                content = `<video src="${videoUrl}" autoplay muted loop playsinline onclick="openLightbox(${index}, 'p-gallery')"></video>`;
+                content = `<iframe src="${videoUrl}" style="width:100%; height:100%; border:none;" allow="autoplay" onclick="openLightbox(${index}, 'p-gallery')"></iframe>`;
             } else {
                 content = `<img src="${item.src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox(${index}, 'p-gallery')">`;
             }
@@ -396,14 +396,14 @@ function initHomePageFeatured() {
 /* ================= UTILS ================= */
 
 function convertToVideoUrl(url) {
-    // Converts Drive lh3/thumbnail URL to streamable export URL
+    // Converts Drive URL to iframe preview URL (most reliable for videos)
     if (!url) return '';
-    if (url.includes('drive.google.com/uc?')) return url; // Already correct
+    if (url.includes('/preview')) return url; // Already correct
 
     // Extract ID from lh3 url: https://lh3.googleusercontent.com/d/FILE_ID
     const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
-        return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+        return `https://drive.google.com/file/d/${match[1]}/preview`;
     }
     return url;
 }
@@ -507,7 +507,7 @@ function updateLightboxContent() {
     let mediaContent = '';
     if (type === 'video') {
         const videoUrl = convertToVideoUrl(src);
-        mediaContent = `<video src="${videoUrl}" controls autoplay playsinline style="max-width:90%; max-height:80vh; border-radius:4px; box-shadow:0 0 20px rgba(0,0,0,0.5);"></video>`;
+        mediaContent = `<iframe src="${videoUrl}" style="width:90%; height:80vh; border:none; border-radius:4px; box-shadow:0 0 20px rgba(0,0,0,0.5);" allow="autoplay"></iframe>`;
     } else {
         mediaContent = `<img src="${src}" alt="Fullscreen View">`;
     }
