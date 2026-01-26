@@ -8,18 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initImageProtection();
 
     // Page specific initializers
-    // Start by trying to fetch new data, but initialize with static data first for speed
+    // Initialize immediately with static data (which is now auto-updated daily)
     if (window.location.pathname.includes('collections.html')) {
         initCollections();
-        fetchProjectsFromDrive(initCollections);
     } else if (window.location.pathname.includes('project.html')) {
-        // Show loading without destroying HTML
-        const titleEl = document.getElementById('p-title');
-        if (titleEl) titleEl.textContent = 'Loading...';
-        fetchProjectsFromDrive(initProjectDetails);
+        initProjectDetails();
     } else if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
         initHomePageFeatured();
-        fetchProjectsFromDrive(initHomePageFeatured);
     }
     initCustomCursor();
 });
@@ -225,7 +220,7 @@ function renderProjects(items) {
         card.innerHTML = `
             <div class="card-img-container">
                 <a href="project.html?id=${project.id}">
-                    <img src="${project.images[0]}" alt="${project.title}" onerror="this.style.display='none'">
+                    <img src="${project.images[0]}" alt="${project.title}" loading="lazy" onerror="this.style.display='none'">
                 </a>
             </div>
             <div class="card-info">
@@ -339,7 +334,7 @@ function initProjectDetails() {
             sec.images.forEach((imgSrc) => {
                 const item = document.createElement('div');
                 item.className = 'gallery-item';
-                item.innerHTML = `<img src="${imgSrc}" alt="${sec.title}" onclick="openLightbox('${imgSrc}')" onerror="this.parentElement.style.display='none'">`;
+                item.innerHTML = `<img src="${imgSrc}" alt="${sec.title}" loading="lazy" onclick="openLightbox('${imgSrc}')" onerror="this.parentElement.style.display='none'">`;
                 grid.appendChild(item);
             });
 
@@ -354,7 +349,7 @@ function initProjectDetails() {
         project.images.forEach((imgSrc, index) => {
             const item = document.createElement('div');
             item.className = 'gallery-item';
-            item.innerHTML = `<img src="${imgSrc}" alt="${project.title} View ${index + 1}" onclick="openLightbox('${imgSrc}')">`;
+            item.innerHTML = `<img src="${imgSrc}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox('${imgSrc}')">`;
             grid.appendChild(item);
         });
         galleryContainer.appendChild(grid);
@@ -386,7 +381,7 @@ function initHomePageFeatured() {
         // Add style for background image dynamically since CSS usually handles it, but we want dynamic data
         // We will override the CSS background with inline style or img tag
         item.innerHTML = `
-            <img src="${p.images[0]}" class="bg-img" alt="${p.title}">
+            <img src="${p.images[0]}" class="bg-img" alt="${p.title}" loading="lazy">
             <div class="overlay-text">
                 <h4>${p.title}</h4>
                 <a href="project.html?id=${p.id}" class="small-link">View Project</a>
