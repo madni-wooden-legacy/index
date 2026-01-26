@@ -1,6 +1,6 @@
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Last updated: 2026-01-26T22:42:04.372Z
+ * Last updated: 2026-01-26T22:45:16.350Z
  * Auto-synced from Google Drive
  */
 
@@ -425,14 +425,14 @@ let projects = [
       "Type": "Premium Design Collection"
     },
     "images": [
-      "https://lh3.googleusercontent.com/d/1MnFyhwP5nYjPrZDM9jbNRJ4_atTXpi5N",
+      "dVOcPrzRZ70",
       "https://lh3.googleusercontent.com/d/1fiay3xIdvnRzU7CsiEUmvvFFiO4gDb4Q",
       "https://lh3.googleusercontent.com/d/1vP5AEMO1pj8ItISSoWPHk1l03zTbQ72d"
     ],
     "media": [
       {
-        "src": "https://lh3.googleusercontent.com/d/1MnFyhwP5nYjPrZDM9jbNRJ4_atTXpi5N",
-        "type": "video"
+        "src": "dVOcPrzRZ70",
+        "type": "youtube"
       },
       {
         "src": "https://lh3.googleusercontent.com/d/1fiay3xIdvnRzU7CsiEUmvvFFiO4gDb4Q",
@@ -1102,26 +1102,26 @@ let projects = [
       "Type": "Premium Design Collection"
     },
     "images": [
-      "https://lh3.googleusercontent.com/d/17Q5TFjMbvxRk1z4XwPb3-wpn4x9gsvEJ",
-      "https://lh3.googleusercontent.com/d/16d3MsmTsNFL8by4A3pcD2tJ0Yz685vaR",
-      "https://lh3.googleusercontent.com/d/1uOOQOwqcvgqi6-vkA_NW4AO8ooPo2DAN",
-      "https://lh3.googleusercontent.com/d/1-pzGgeGY4iEpp0HuVs3Q4Glbvz8zmrhB",
+      "3NkpTR0oXdk",
+      "yw8iDMxiSH0",
+      "osUIjJrIva8",
+      "3XZesivjjXU",
       "https://lh3.googleusercontent.com/d/11005F7j-AfUEjMPLWzw7IsMDPPziPAec",
-      "https://lh3.googleusercontent.com/d/164NpQ22iagJL8dKyeOtWQnFcykbsvytS",
+      "m5DbN_18jLA",
       "https://lh3.googleusercontent.com/d/1BYmuTpHuuQoY7LRQtnBud94Sp2B7Uy6c",
       "https://lh3.googleusercontent.com/d/1FOFrO_P3RUKGRqK-bpoAcHNEHwCZbcqX",
       "https://lh3.googleusercontent.com/d/1FZuqdJ_AX9zMtNaV5KKlLZXGlvw8n460",
-      "https://lh3.googleusercontent.com/d/1G9IK7qV1AkU-XMOWkbjqcZTbFfuXUei_",
+      "di0MLqCzu9s",
       "https://lh3.googleusercontent.com/d/1JXrNKjQ9GD9pNDVCOZafd0gRmA1v9nN2",
       "https://lh3.googleusercontent.com/d/1LAy3InFltlzk7d0HyhmMCxWGwK4iHQ2x",
       "https://lh3.googleusercontent.com/d/1YTF1e547HfTnt0s2biqqUZp4E5loRFNl",
       "https://lh3.googleusercontent.com/d/1d6TxJU7YgasDkVlrOhigPW4XCUMVogBd",
-      "https://lh3.googleusercontent.com/d/1fFVGwTSLoGyVxYsVP6mugaD8vOMw_97X",
+      "VIU-xlS46uQ",
       "https://lh3.googleusercontent.com/d/1odYi6KKf6r7QZ2SMnXf7sNCOAyqjJwvj",
       "https://lh3.googleusercontent.com/d/1qD3R0v0JkDm5ZoZCL2fuC4Cak-dRQu0K",
-      "https://lh3.googleusercontent.com/d/1s4ntYQ-696oeeSmpAE6SkG8Ya-g8i45Z",
+      "DqP81-AOARM",
       "https://lh3.googleusercontent.com/d/1tfVLu1y15BxZeFHGUsztfzFn_hcfzF1e",
-      "https://lh3.googleusercontent.com/d/1VtmcMJEDQFSb_V2TqouGMb5AdG0ML6zm",
+      "uVpxiNtg_J8",
       "https://lh3.googleusercontent.com/d/17YAVKImNzy1K00PHC7SX_RDTD-3v5ZWI",
       "https://lh3.googleusercontent.com/d/1TqjOR3OTGYBbXTLYubZ716cX2T0-mpq5",
       "https://lh3.googleusercontent.com/d/1_QeD5mYCyY5iRhyAV0DiAZX1HFnUCFQu",
@@ -1387,28 +1387,28 @@ let projects = [
     ],
     "media": [
       {
-        "src": "https://lh3.googleusercontent.com/d/17Q5TFjMbvxRk1z4XwPb3-wpn4x9gsvEJ",
-        "type": "video"
+        "src": "3NkpTR0oXdk",
+        "type": "youtube"
       },
       {
-        "src": "https://lh3.googleusercontent.com/d/16d3MsmTsNFL8by4A3pcD2tJ0Yz685vaR",
-        "type": "video"
+        "src": "yw8iDMxiSH0",
+        "type": "youtube"
       },
       {
-        "src": "https://lh3.googleusercontent.com/d/1uOOQOwqcvgqi6-vkA_NW4AO8ooPo2DAN",
-        "type": "video"
+        "src": "osUIjJrIva8",
+        "type": "youtube"
       },
       {
-        "src": "https://lh3.googleusercontent.com/d/1-pzGgeGY4iEpp0HuVs3Q4Glbvz8zmrhB",
-        "type": "video"
+        "src": "3XZesivjjXU",
+        "type": "youtube"
       },
       {
         "src": "https://lh3.googleusercontent.com/d/11005F7j-AfUEjMPLWzw7IsMDPPziPAec",
         "type": "video"
       },
       {
-        "src": "https://lh3.googleusercontent.com/d/164NpQ22iagJL8dKyeOtWQnFcykbsvytS",
-        "type": "video"
+        "src": "m5DbN_18jLA",
+        "type": "youtube"
       },
       {
         "src": "https://lh3.googleusercontent.com/d/1BYmuTpHuuQoY7LRQtnBud94Sp2B7Uy6c",
@@ -1423,8 +1423,8 @@ let projects = [
         "type": "video"
       },
       {
-        "src": "https://lh3.googleusercontent.com/d/1G9IK7qV1AkU-XMOWkbjqcZTbFfuXUei_",
-        "type": "video"
+        "src": "di0MLqCzu9s",
+        "type": "youtube"
       },
       {
         "src": "https://lh3.googleusercontent.com/d/1JXrNKjQ9GD9pNDVCOZafd0gRmA1v9nN2",
@@ -1443,8 +1443,8 @@ let projects = [
         "type": "video"
       },
       {
-        "src": "https://lh3.googleusercontent.com/d/1fFVGwTSLoGyVxYsVP6mugaD8vOMw_97X",
-        "type": "video"
+        "src": "VIU-xlS46uQ",
+        "type": "youtube"
       },
       {
         "src": "https://lh3.googleusercontent.com/d/1odYi6KKf6r7QZ2SMnXf7sNCOAyqjJwvj",
@@ -1455,16 +1455,16 @@ let projects = [
         "type": "video"
       },
       {
-        "src": "https://lh3.googleusercontent.com/d/1s4ntYQ-696oeeSmpAE6SkG8Ya-g8i45Z",
-        "type": "video"
+        "src": "DqP81-AOARM",
+        "type": "youtube"
       },
       {
         "src": "https://lh3.googleusercontent.com/d/1tfVLu1y15BxZeFHGUsztfzFn_hcfzF1e",
         "type": "video"
       },
       {
-        "src": "https://lh3.googleusercontent.com/d/1VtmcMJEDQFSb_V2TqouGMb5AdG0ML6zm",
-        "type": "video"
+        "src": "uVpxiNtg_J8",
+        "type": "youtube"
       },
       {
         "src": "https://lh3.googleusercontent.com/d/17YAVKImNzy1K00PHC7SX_RDTD-3v5ZWI",
