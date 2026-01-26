@@ -13,7 +13,7 @@ function updateWebsiteData() {
         const projectsData = generateProjectsData();
 
         // 2. Synchronize Deletions (Remove from YT if deleted from Drive)
-        syncYouTubeDeletions(projectsData);
+        syncYouTubeDeletions();
 
         // 3. Create the data.js file content
         const fileContent = `/**
@@ -35,7 +35,7 @@ let projects = ${JSON.stringify(projectsData, null, 2)};
     }
 }
 
-// Helper function to get all images AND VIDEOS recursively
+// Helper function to simply COLLECT all image and video file objects
 function getAllFilesRecursive(folder) {
     let foundFiles = [];
     let files = folder.getFiles();
@@ -43,42 +43,12 @@ function getAllFilesRecursive(folder) {
         let f = files.next();
         let mime = f.getMimeType();
 
-        // Check for IMAGE or VIDEO
-        if (mime.includes("image")) {
+        if (mime.includes("image") || mime.includes("video")) {
             foundFiles.push({
-                url: "https://lh3.googleusercontent.com/d/" + f.getId(),
-                type: "image",
-                mime: mime
+                file: f,
+                mime: mime,
+                is_video: mime.includes("video")
             });
-        } else if (mime.includes("video")) {
-            // Check if already uploaded to YouTube
-            let youtubeId = getYoutubeIdFromDescription(f);
-
-            if (!youtubeId) {
-                console.log('🚀 Uploading new video to YouTube: ' + f.getName());
-                youtubeId = uploadFileToYouTube(f.getId(), f.getName());
-                if (youtubeId) {
-                    setYoutubeIdInDescription(f, youtubeId);
-                    // Add to tracker
-                    updateSyncTracker(f.getId(), youtubeId);
-                }
-            }
-
-            if (youtubeId) {
-                foundFiles.push({
-                    url: youtubeId,
-                    type: "youtube",
-                    mime: mime,
-                    driveId: f.getId() // Add for sync tracking
-                });
-            } else {
-                foundFiles.push({
-                    url: "https://lh3.googleusercontent.com/d/" + f.getId(),
-                    type: "video",
-                    mime: mime,
-                    driveId: f.getId()
-                });
-            }
         }
     }
     let subFolders = folder.getFolders();
@@ -99,14 +69,31 @@ function updateSyncTracker(driveId, youtubeId) {
  * Uploads a video from Google Drive to YouTube (Unlisted)
  * Requires YouTube Data API v3 Service to be enabled
  */
+/**
+ * Uploads a video from Google Drive to YouTube (Unlisted)
+ * Requires YouTube Data API v3 Service to be enabled
+ */
+let QUOTA_EXCEEDED = false;
+
 function uploadFileToYouTube(fileId, title) {
+    if (QUOTA_EXCEEDED) return null;
+
     try {
         const file = DriveApp.getFileById(fileId);
         const blob = file.getBlob();
 
+        // CLEAN AND TRIM TITLE (YouTube limit is 100)
+        let cleanTitle = (title || file.getName())
+            .replace(/[^\x00-\x7F]/g, "") // Remove non-ASCII for safety
+            .replace(/\.mp4|\.mov|\.avi/gi, "") // Remove extension
+            .trim();
+
+        if (cleanTitle.length > 95) cleanTitle = cleanTitle.substring(0, 95) + "...";
+        if (cleanTitle.length === 0) cleanTitle = "Madni Wooden Legacy Video";
+
         const resource = {
             snippet: {
-                title: title || file.getName(),
+                title: cleanTitle,
                 description: 'Uploaded automatically from Madni Wooden Legacy Gallery',
                 categoryId: '22' // People & Blogs
             },
@@ -120,6 +107,10 @@ function uploadFileToYouTube(fileId, title) {
         return video.id;
     } catch (e) {
         console.error('❌ YouTube Upload Failed: ' + e.toString());
+        if (e.toString().includes('exceeded') || e.toString().includes('quota')) {
+            console.warn('⚠️ DAILY UPLOAD LIMIT REACHED. Script will skip further uploads today.');
+            QUOTA_EXCEEDED = true;
+        }
         return null;
     }
 }
@@ -139,23 +130,15 @@ function setYoutubeIdInDescription(file, youtubeId) {
  * Ensures YouTube channel stays in sync with Drive.
  * Deletes videos from YouTube that were removed from Drive.
  */
-function syncYouTubeDeletions(projectsData) {
+/**
+ * Ensures YouTube channel stays in sync with Drive.
+ * Deletes videos from YouTube that were removed from Drive.
+ */
+function syncYouTubeDeletions() {
     const props = PropertiesService.getScriptProperties();
     const tracking = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
 
-    // 1. Get all Drive File IDs currently in the website data
-    const currentDriveIds = new Set();
-    projectsData.forEach(p => {
-        if (p.media) {
-            p.media.forEach(m => {
-                // If it's a youtube type, we need to know WHICH drive file it came from
-                // We'll update the data generation to include driveId for this reason
-            });
-        }
-    });
-
-    // REVISED APPROACH: We scan all Drive IDs discovered during this run.
-    // Let's pass the discovered IDs to this function.
+    // 1. We scan all Drive IDs discovered during the generation run.
     const discoveredDriveIds = GLOBAL_DISCOVERED_DRIVE_IDS || [];
 
     // 2. Find IDs in our tracker that are NOT in Drive anymore
@@ -188,32 +171,56 @@ function generateProjectsData() {
 
     while (categories.hasNext()) {
         let catFolder = categories.next();
-        let catName = catFolder.getName().toLowerCase();
+        let catRealName = catFolder.getName();
+        let catName = catRealName.toLowerCase();
 
-        let allFiles = getAllFilesRecursive(catFolder);
+        // 1. Collect all files in this category
+        let collectedFiles = getAllFilesRecursive(catFolder);
 
-        if (allFiles.length > 0) {
-            let mediaList = allFiles.map(f => {
-                if (f.driveId) GLOBAL_DISCOVERED_DRIVE_IDS.push(f.driveId);
-                return {
-                    src: f.url,
-                    type: f.type
-                };
+        if (collectedFiles.length > 0) {
+            let mediaList = [];
+
+            // 2. Process each file with a serial number
+            collectedFiles.forEach((item, index) => {
+                const f = item.file;
+                const driveId = f.getId();
+                GLOBAL_DISCOVERED_DRIVE_IDS.push(driveId);
+
+                // Generate Serial Name (e.g., Kitchen - 01)
+                const serialNum = (index + 1).toString().padStart(2, '0');
+                const serialTitle = `${catRealName} - ${serialNum}`;
+
+                if (item.is_video) {
+                    let youtubeId = getYoutubeIdFromDescription(f);
+
+                    if (!youtubeId && !QUOTA_EXCEEDED) {
+                        console.log('🚀 Uploading to YouTube with Serial Name: ' + serialTitle);
+                        youtubeId = uploadFileToYouTube(driveId, serialTitle);
+                        if (youtubeId) {
+                            setYoutubeIdInDescription(f, youtubeId);
+                            updateSyncTracker(driveId, youtubeId);
+                        }
+                    }
+
+                    if (youtubeId) {
+                        mediaList.push({ src: youtubeId, type: "youtube" });
+                    } else {
+                        mediaList.push({ src: "https://lh3.googleusercontent.com/d/" + driveId, type: "video" });
+                    }
+                } else {
+                    // It's an image
+                    mediaList.push({ src: "https://lh3.googleusercontent.com/d/" + driveId, type: "image", title: serialTitle });
+                }
             });
-
-            // For backward compatibility with old code that expects strings in 'images'
-            // We'll just put the URLs there. Frontend will need to detect video extensions or use the new 'media' property.
-            // Since Google Drive URLs don't have extensions, we MUST use the 'media' property or metadata.
-            // Let's update frontend to use 'media' property.
 
             projects.push({
                 id: catName.replace(/\s+/g, '-'),
-                title: catFolder.getName(),
+                title: catRealName,
                 category: catName,
-                description: "Exclusive collection of " + catFolder.getName(),
+                description: "Exclusive collection of " + catRealName,
                 details: { "Type": "Premium Design Collection" },
-                images: mediaList.map(m => m.src), // Fallback array of strings
-                media: mediaList // NEW: Array of {src, type} objects
+                images: mediaList.map(m => m.src),
+                media: mediaList
             });
         }
     }
