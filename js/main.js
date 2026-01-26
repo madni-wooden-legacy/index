@@ -176,8 +176,8 @@ function renderProjects(items) {
 
         let mediaHtml = '';
         if (mediaItem.type === 'video') {
-            const videoUrl = convertToVideoUrl(mediaItem.src);
-            mediaHtml = `<iframe src="${videoUrl}" style="width:100%; height:200px; border:none; pointer-events:none;" allow="autoplay"></iframe>`;
+            const videoUrl = convertToVideoUrl(mediaItem.src, true);
+            mediaHtml = `<div class="video-wrapper" style="position:relative; width:100%; padding-top:56.25%; background:#000;"><iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="autoplay" frameborder="0"></iframe></div>`;
         } else {
             mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy" onerror="this.style.display='none'">`;
         }
@@ -305,8 +305,8 @@ function initProjectDetails() {
 
                 let content = '';
                 if (isVideo(src)) {
-                    const videoUrl = convertToVideoUrl(src);
-                    content = `<iframe src="${videoUrl}" style="width:100%; height:100%; border:none;" allow="autoplay" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')"></iframe>`;
+                    const videoUrl = convertToVideoUrl(src, true);
+                    content = `<div class="video-wrapper" style="cursor:pointer; position:relative; width:100%; padding-top:56.25%; background:#000;" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')"><iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe></div>`;
                 } else {
                     content = `<img src="${src}" alt="${sec.title}" loading="lazy" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')" onerror="this.parentElement.style.display='none'">`;
                 }
@@ -341,8 +341,8 @@ function initProjectDetails() {
 
             let content = '';
             if (item.type === 'video') {
-                const videoUrl = convertToVideoUrl(item.src);
-                content = `<iframe src="${videoUrl}" style="width:100%; height:100%; border:none;" allow="autoplay" onclick="openLightbox(${index}, 'p-gallery')"></iframe>`;
+                const videoUrl = convertToVideoUrl(item.src, true);
+                content = `<div class="video-wrapper" style="cursor:pointer; position:relative; width:100%; padding-top:56.25%; background:#000;" onclick="openLightbox(${index}, 'p-gallery')"><iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe></div>`;
             } else {
                 content = `<img src="${item.src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox(${index}, 'p-gallery')">`;
             }
@@ -395,15 +395,18 @@ function initHomePageFeatured() {
 
 /* ================= UTILS ================= */
 
-function convertToVideoUrl(url) {
-    // Converts Drive URL to iframe preview URL (most reliable for videos)
+function convertToVideoUrl(url, autoplay = true) {
+    // Converts Drive URL to iframe preview URL with autoplay and mute
     if (!url) return '';
-    if (url.includes('/preview')) return url; // Already correct
 
     // Extract ID from lh3 url: https://lh3.googleusercontent.com/d/FILE_ID
     const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
-        return `https://drive.google.com/file/d/${match[1]}/preview`;
+        const baseUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
+        if (autoplay) {
+            return `${baseUrl}?autoplay=1&mute=1`;
+        }
+        return `${baseUrl}?mute=1`;
     }
     return url;
 }
@@ -506,8 +509,8 @@ function updateLightboxContent() {
 
     let mediaContent = '';
     if (type === 'video') {
-        const videoUrl = convertToVideoUrl(src);
-        mediaContent = `<iframe src="${videoUrl}" style="width:90%; height:80vh; border:none; border-radius:4px; box-shadow:0 0 20px rgba(0,0,0,0.5);" allow="autoplay"></iframe>`;
+        const videoUrl = convertToVideoUrl(src, false);
+        mediaContent = `<iframe src="${videoUrl}" style="width:90%; height:80vh; border:none; border-radius:4px; box-shadow:0 0 20px rgba(0,0,0,0.5);" allow="autoplay" frameborder="0"></iframe>`;
     } else {
         mediaContent = `<img src="${src}" alt="Fullscreen View">`;
     }
