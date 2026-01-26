@@ -223,7 +223,7 @@ function renderProjects(items) {
         let mediaHtml = '';
 
         if (isVideo(mainMedia)) {
-            mediaHtml = `<video src="${mainMedia}" muted loop onmouseover="this.play()" onmouseout="this.pause()" playsinline></video>`;
+            mediaHtml = `<video src="${mainMedia}" autoplay muted loop playsinline style="pointer-events: none;"></video>`;
         } else {
             mediaHtml = `<img src="${mainMedia}" alt="${project.title}" loading="lazy" onerror="this.style.display='none'">`;
         }
@@ -351,7 +351,7 @@ function initProjectDetails() {
 
                 let content = '';
                 if (isVideo(src)) {
-                    content = `<video src="${src}" muted loop onmouseover="this.play()" onmouseout="this.pause()" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')"></video>`;
+                    content = `<video src="${src}" autoplay muted loop playsinline onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')"></video>`;
                 } else {
                     content = `<img src="${src}" alt="${sec.title}" loading="lazy" onclick="openLightbox('${src}', ${mediaIdx}, 'sec-${idx}')" onerror="this.parentElement.style.display='none'">`;
                 }
@@ -381,7 +381,7 @@ function initProjectDetails() {
 
             let content = '';
             if (isVideo(src)) {
-                content = `<video src="${src}" muted loop onmouseover="this.play()" onmouseout="this.pause()" onclick="openLightbox('${src}', ${index}, 'main')"></video>`;
+                content = `<video src="${src}" autoplay muted loop playsinline onclick="openLightbox('${src}', ${index}, 'main')"></video>`;
             } else {
                 content = `<img src="${src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox('${src}', ${index}, 'main')">`;
             }
