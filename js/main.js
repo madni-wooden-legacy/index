@@ -387,9 +387,16 @@ function initProjectDetails() {
         galleryContainer.appendChild(grid);
     }
 
-    // Update Inquiry Button
+    // Update Inquiry Buttons
     const waMsg = `Hi, I am interested in the design: ${project.title}. Can you provide a quote?`;
-    document.getElementById('wa-inquiry').href = `https://wa.me/923004339143?text=${encodeURIComponent(waMsg)}`;
+    const mailSubject = `Quote Request: ${project.title}`;
+    const mailBody = `Hi Muhammad Abbas,\n\nI saw your design "${project.title}" on the website and would like to get a quote.\n\nProject Link: ${window.location.href}`;
+
+    const waBtn = document.getElementById('wa-inquiry');
+    const mailBtn = document.getElementById('mail-inquiry');
+
+    if (waBtn) waBtn.href = `https://wa.me/923004339143?text=${encodeURIComponent(waMsg)}`;
+    if (mailBtn) mailBtn.href = `mailto:madniwoodenlegacy@gmail.com?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
 }
 
 /* ================= HOME PAGE LOGIC ================= */
@@ -612,3 +619,51 @@ style.innerHTML = `
     video { object-fit: contain; }
 `;
 document.head.appendChild(style);
+
+/* ================= CONTACT FORM LOGIC ================= */
+
+function initContactForm() {
+    const form = document.getElementById('contact-form');
+    if (!form) return;
+
+    const btnWhatsApp = document.getElementById('submit-whatsapp');
+    const btnEmail = document.getElementById('submit-email');
+
+    const handleSubmission = (method) => {
+        // Get values
+        const nameInput = form.querySelector('input[type="text"]');
+        const phoneInput = form.querySelector('input[type="tel"]');
+        const messageInput = form.querySelector('textarea');
+
+        const name = nameInput.value;
+        const phone = phoneInput.value;
+        const message = messageInput.value;
+
+        if (!name || !message) {
+            alert('Please fill in your name and message.');
+            return;
+        }
+
+        if (method === 'whatsapp') {
+            const waMsg = `*New Website Inquiry*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Message:* ${message}`;
+            const waUrl = `https://wa.me/923004339143?text=${encodeURIComponent(waMsg)}`;
+            window.open(waUrl, '_blank');
+        } else {
+            const email = "madniwoodenlegacy@gmail.com";
+            const subject = encodeURIComponent(`New Inquiry: ${name}`);
+            const body = encodeURIComponent(`Name: ${name}\nPhone: ${phone}\n\nMessage:\n${message}`);
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        }
+
+        form.reset();
+    };
+
+    if (btnWhatsApp) btnWhatsApp.addEventListener('click', () => handleSubmission('whatsapp'));
+    if (btnEmail) btnEmail.addEventListener('click', () => handleSubmission('email'));
+}
+
+// Call in DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing calls ...
+    initContactForm();
+});
