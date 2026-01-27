@@ -259,7 +259,6 @@ body.dark-mode .site-header {
     overflow: hidden;
     border-radius: var(--radius);
     height: 400px;
-    box-shadow: var(--shadow);
 }
 
 .cat-card img {
@@ -423,7 +422,6 @@ body.dark-mode .filter-btn {
     background: #fff;
     border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: var(--shadow);
     transition: transform 0.3s;
 }
 
@@ -640,7 +638,6 @@ body.dark-mode .detail-sidebar ul li {
     max-height: 85vh;
     max-width: 90vw;
     object-fit: contain;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
     border-radius: 4px;
 }
 

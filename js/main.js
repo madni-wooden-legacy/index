@@ -304,13 +304,10 @@ function initProjectDetails() {
                 secWrapper.appendChild(h3);
             }
 
-            const grid = document.createElement('div');
-            grid.className = 'gallery-grid';
+            // Create a playlist for this section and scatter videos
+            const sectionMedia = scatterMedia(sec.images);
 
-            // Create a playlist for this section
-            const sectionMedia = sec.images;
-
-            sec.images.forEach((src, mediaIdx) => {
+            sectionMedia.forEach((src, mediaIdx) => {
                 const item = document.createElement('div');
                 item.className = 'gallery-item';
 
@@ -318,7 +315,6 @@ function initProjectDetails() {
                 const mediaItem = project.media ? project.media.find(m => m.src === src || m.src === getYoutubeIdFromUrl(src)) : null;
                 const type = mediaItem ? mediaItem.type : (isVideo(src) ? 'video' : 'image');
 
-                let content = '';
                 if (type === 'youtube') {
                     const ytId = mediaItem.src;
                     content = `<div class="video-container" style="position:relative; width:100%; aspect-ratio:9/16; background:#111; overflow:hidden;">
@@ -355,9 +351,9 @@ function initProjectDetails() {
         // NORMALIZED PLAYLIST
         let playlist = [];
         if (project.media && project.media.length > 0) {
-            playlist = project.media;
+            playlist = scatterMedia(project.media);
         } else {
-            playlist = project.images.map(url => ({ src: url, type: isVideo(url) ? 'video' : 'image' }));
+            playlist = scatterMedia(project.images.map(url => ({ src: url, type: isVideo(url) ? 'video' : 'image' })));
         }
 
         playlist.forEach((item, index) => {
@@ -369,13 +365,13 @@ function initProjectDetails() {
                 const ytId = item.src;
                 content = `<div class="video-container" style="position:relative; width:100%; aspect-ratio:9/16; background:#111; overflow:hidden;">
                     <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0&controls=0&iv_load_policy=3&disablekb=1&fs=0&showinfo=0" style="position:absolute; top:-10%; left:0; width:100%; height:120%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
-                    <div style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
+                    <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
                 </div>`;
             } else if (item.type === 'video') {
                 const videoUrl = convertToVideoUrl(item.src, true);
                 content = `<div class="video-container" style="position:relative; width:100%; aspect-ratio:9/16; background:#111; overflow:hidden;">
                     <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
-                    <div style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
+                    <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
                 </div>`;
             } else {
                 content = `<img src="${item.src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox(${index}, 'p-gallery')">`;
@@ -428,6 +424,41 @@ function initHomePageFeatured() {
 }
 
 /* ================= UTILS ================= */
+
+function scatterMedia(list) {
+    if (!list || list.length < 3) return list;
+
+    const videos = list.filter(item => {
+        const src = typeof item === 'string' ? item : item.src;
+        const type = typeof item === 'string' ? (isVideo(src) ? 'video' : 'image') : (item.type || (isVideo(src) ? 'video' : 'image'));
+        return type === 'youtube' || type === 'video';
+    });
+    const images = list.filter(item => {
+        const src = typeof item === 'string' ? item : item.src;
+        const type = typeof item === 'string' ? (isVideo(src) ? 'video' : 'image') : (item.type || (isVideo(src) ? 'video' : 'image'));
+        return type !== 'youtube' && type !== 'video';
+    });
+
+    if (videos.length === 0 || images.length === 0) return list;
+
+    const result = [];
+    const step = Math.max(1, Math.floor(images.length / videos.length));
+
+    let vidIdx = 0;
+    let imgIdx = 0;
+
+    while (imgIdx < images.length || vidIdx < videos.length) {
+        // Add images block
+        for (let i = 0; i < step && imgIdx < images.length; i++) {
+            result.push(images[imgIdx++]);
+        }
+        // Add one video
+        if (vidIdx < videos.length) {
+            result.push(videos[vidIdx++]);
+        }
+    }
+    return result;
+}
 
 function convertToVideoUrl(url, autoplay = true) {
     if (!url) return '';
@@ -485,18 +516,16 @@ function isVideo(url) {
 let currentPlaylist = [];
 let currentIndex = 0;
 
-function openLightbox(src, index, contextId) {
+function openLightbox(index, contextId) {
     // 1. Get playlist from context
     let container = document.getElementById(contextId);
-    if (contextId === 'main') container = document.getElementById('p-gallery'); // Fallback logic
 
     if (container && container.dataset.playlist) {
         currentPlaylist = JSON.parse(container.dataset.playlist);
         currentIndex = index;
     } else {
-        // Fallback single item
-        currentPlaylist = [src];
-        currentIndex = 0;
+        console.error("No playlist found for context: " + contextId);
+        return;
     }
 
     // 2. Create Lightbox if not exists
@@ -540,28 +569,27 @@ function updateLightboxContent() {
 
     const item = currentPlaylist[currentIndex];
 
-    // Support both string items (legacy) and object items
-    let src = item.src || item;
-    let type = item.type || (isVideo(src) ? 'video' : 'image');
+    // Standardize item as object { src, type }
+    let src = typeof item === 'string' ? item : item.src;
+    let type = typeof item === 'string' ? (isVideo(src) ? 'video' : 'image') : (item.type || (isVideo(src) ? 'video' : 'image'));
 
-    let mediaContent = '';
     if (type === 'youtube') {
         const ytId = src.includes('http') ? getYoutubeIdFromUrl(src) : src;
         mediaContent = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding: 20px;">
-            <div style="width:100%; max-width:1000px; aspect-ratio:9/16; max-height:85vh; position:relative; box-shadow:0 0 40px rgba(0,0,0,0.8);">
-                <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&loop=1&playlist=${ytId}&modestbranding=1&rel=0&controls=1" 
+            <div style="width:100%; max-width:1000px; aspect-ratio:9/16; max-height:85vh; position:relative;">
+                <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0&controls=1" 
                 style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; border-radius:8px;" allow="autoplay; fullscreen" frameborder="0"></iframe>
             </div>
         </div>`;
     } else if (type === 'video') {
         const videoUrl = convertToVideoUrl(src, false);
         mediaContent = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding: 20px;">
-             <div style="width:100%; max-width:1000px; aspect-ratio:9/16; max-height:85vh; position:relative; box-shadow:0 0 40px rgba(0,0,0,0.8);">
-                <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; border-radius:8px;" allow="autoplay; fullscreen" frameborder="0"></iframe>
+             <div style="width:100%; max-width:1000px; aspect-ratio:9/16; max-height:85vh; position:relative;">
+                <iframe src="${videoUrl}&mute=1" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; border-radius:8px;" allow="autoplay; fullscreen" frameborder="0"></iframe>
             </div>
         </div>`;
     } else {
-        mediaContent = `<img src="${src}" alt="Fullscreen View" style="max-height:85vh; max-width:90vw; object-fit:contain; border-radius:8px; box-shadow:0 0 40px rgba(0,0,0,0.8);">`;
+        mediaContent = `<img src="${src}" alt="Fullscreen View" style="max-height:85vh; max-width:90vw; object-fit:contain; border-radius:8px;">`;
     }
 
     lightbox.innerHTML = `

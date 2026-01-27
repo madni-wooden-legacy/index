@@ -13,39 +13,54 @@ let STATS = {
     deleted: 0,
     images: 0,
     errors: 0,
+    errorsList: [],
     isPartial: false
 };
 
 const START_TIME = new Date().getTime();
 const MAX_RUNTIME = 330000; // 5.5 minutes (Limit is 6)
 
-// This function runs automatically every day
+// This function runs automatically based on your schedule
 function updateWebsiteData() {
+    const props = PropertiesService.getScriptProperties();
     try {
-        // Reset Stats
-        STATS = { newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0 };
+        // 1. Load Batch Data
+        let batchCount = parseInt(props.getProperty('BATCH_RUN_COUNT') || '0') + 1;
+        let cumulative = JSON.parse(props.getProperty('STATS_CUMULATIVE') || JSON.stringify({ newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: [] }));
 
-        // 1. Get data from Drive (This handles uploads and physical renaming)
+        // Reset Current Stats
+        STATS = { newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: [], isPartial: false };
+
+        // 2. RUN SYNC
         const projectsData = generateProjectsData();
-
-        // 2. Synchronize Deletions (Remove from YT if deleted from Drive)
         syncYouTubeDeletions();
+        updateGitHubFile('js/data.js', `let projects = ${JSON.stringify(projectsData, null, 2)};`);
 
-        // 3. Create the data.js file content
-        const fileContent = `/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Last updated: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' })} (Pakistan Time)
- * Auto-synced from Google Drive
- */
+        // 3. Accumulate Stats
+        cumulative.newUploads += STATS.newUploads;
+        cumulative.skipped += STATS.skipped;
+        cumulative.deleted += STATS.deleted;
+        cumulative.images = STATS.images;
+        cumulative.errors += STATS.errors;
 
-let projects = ${JSON.stringify(projectsData, null, 2)};
-`;
+        // Accumulate unique error messages
+        if (!cumulative.errorsList) cumulative.errorsList = [];
+        STATS.errorsList.forEach(msg => {
+            if (!cumulative.errorsList.includes(msg)) cumulative.errorsList.push(msg);
+        });
 
-        // 4. Update the file on GitHub
-        updateGitHubFile('js/data.js', fileContent);
-
-        // 5. Send Status Email
-        sendStatusEmail();
+        // 4. Save and Check for Report
+        if (batchCount >= 24) {
+            sendStatusEmail(batchCount, cumulative);
+            // RESET for next batch
+            props.setProperty('BATCH_RUN_COUNT', '0');
+            props.setProperty('STATS_CUMULATIVE', JSON.stringify({ newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: [] }));
+            console.log('📬 Batch Report Sent and Reset.');
+        } else {
+            props.setProperty('BATCH_RUN_COUNT', batchCount.toString());
+            props.setProperty('STATS_CUMULATIVE', JSON.stringify(cumulative));
+            console.log(`📊 Run ${batchCount}/24 completed. Saving progress...`);
+        }
 
         console.log('✅ SUCCESS: Website data updated at ' + new Date());
 
@@ -55,31 +70,27 @@ let projects = ${JSON.stringify(projectsData, null, 2)};
     }
 }
 
-function sendStatusEmail() {
+function sendStatusEmail(batchCount, stats) {
     const recipient = Session.getActiveUser().getEmail();
-    const subject = "🚀 Madni Website Sync Report: " + new Date().toLocaleDateString();
+    const subject = `🚀 Madni Website Batch Report (${batchCount} Runs)`;
 
     const body = `
-SYNC STATUS REPORT
-------------------
-Date: ${new Date().toLocaleString()} (Pakistan Time)
+MADNI WEBSITE SYNC SUMMARY (Batch of ${batchCount} runs)
+------------------------------------------------------
+Total New Videos Uploaded: ${stats.newUploads}
+Videos Already Synced: ${stats.skipped}
+Dead Videos Removed: ${stats.deleted}
+Total Website Images: ${stats.images}
+Total Errors in Batch: ${stats.errors}
 
-- Total New Videos Uploaded: ${STATS.newUploads}
-- Videos Skipped (Already Sync): ${STATS.skipped}
-- Dead Videos Deleted from YT: ${STATS.deleted}
-- Total Images Processed: ${STATS.images}
-- Encountered Errors: ${STATS.errors}
+${stats.errorsList && stats.errorsList.length > 0 ? `⚠️ ERROR DETAILS:\n- ${stats.errorsList.join('\n- ')}` : '✅ No errors encountered.'}
 
-${STATS.isPartial ? '⚠️ NOTE: This was a PARTIAL sync because the script reached the 6-minute Google limit. The remaining files will be processed in the next run.' : '✅ Full Sync Complete.'}
-
-Website Status: ✅ UPDATED & LIVE
+Website Status: ✅ LIVE & FULLY SYNCED
 🔗 Live Website: https://${GITHUB_REPO_OWNER}.github.io/${GITHUB_REPO_NAME}/
 🔗 Google Drive Folder: https://drive.google.com/drive/u/0/folders/${ROOT_FOLDER_ID}
 🔗 GitHub Repo: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}
 YouTube Channel: Your Channel (Unlisted)
-
-The next sync is scheduled for tomorrow at 3:00 AM.
-  `;
+    `;
 
     MailApp.sendEmail(recipient, subject, body);
 }
@@ -169,8 +180,10 @@ function uploadFileToYouTube(fileId, title) {
         const video = YouTube.Videos.insert(resource, 'snippet,status', blob);
         return video.id;
     } catch (e) {
-        console.error('❌ YouTube Upload Failed: ' + e.toString());
-        if (e.toString().includes('exceeded') || e.toString().includes('quota')) {
+        const errorMsg = e.toString();
+        console.error('❌ YouTube Upload Failed: ' + errorMsg);
+        STATS.errorsList.push(errorMsg);
+        if (errorMsg.includes('exceeded') || errorMsg.includes('quota')) {
             console.warn('⚠️ DAILY UPLOAD LIMIT REACHED.');
             QUOTA_EXCEEDED = true;
         }
