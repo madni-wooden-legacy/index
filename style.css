@@ -621,8 +621,8 @@ body.dark-mode .detail-sidebar ul li {
 .lightbox {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 2000;
+    background: rgba(0, 0, 0, 0.98);
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -637,8 +637,9 @@ body.dark-mode .detail-sidebar ul li {
 }
 
 .lightbox img {
-    max-height: 90vh;
+    max-height: 85vh;
     max-width: 90vw;
+    object-fit: contain;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
     border-radius: 4px;
 }
@@ -720,33 +721,79 @@ footer {
         display: block;
     }
 
-    .btn-outline {
-        /* Hide Get Quote on small mobile if needed, or adjust */
-    }
+
 }
 
 /* ================= VIDEO CONTAINERS ================= */
 .video-container {
     position: relative;
     width: 100%;
-    /* Responsive aspect ratio based on content */
-    background: #000;
+    /* Default to vertical aspect ratio (9:16) */
+    aspect-ratio: 9 / 16;
+    background: #111;
     overflow: hidden;
     border-radius: var(--radius);
 }
 
 .video-container iframe {
+    position: absolute;
     width: 100%;
-    height: 100%;
-    aspect-ratio: 16 / 9;
-    /* Default YouTube ratio */
+    height: 125%;
+    /* Taller to overflow the top/bottom clutter */
+    top: -12.5%;
+    left: 0;
     border: none;
-    display: block;
+    pointer-events: none;
 }
 
-/* Specific fix for vertical videos/shorts */
-.gallery-item.vertical .video-container iframe {
-    aspect-ratio: 9 / 16;
+/* Soft Gradient to keep it premium but compliant with YT policies */
+.video-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    /* Fade top UI */
+    background: linear-gradient(to bottom, #111 20%, rgba(17, 17, 17, 0) 100%);
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* Show briefly some text as requested */
+.video-container::after {
+    content: 'YouTube Playback';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.6rem;
+    z-index: 6;
+    animation: fadeOutText 3s forwards;
+    pointer-events: none;
+}
+
+@keyframes fadeOutText {
+    0% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.gallery-item.horizontal .video-container {
+    aspect-ratio: 16 / 9;
+}
+
+.gallery-item.horizontal .video-container iframe {
+    height: 100%;
+    top: 0;
 }
 
 /* Responsive fixes */

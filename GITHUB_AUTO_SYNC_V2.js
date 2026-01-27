@@ -12,8 +12,12 @@ let STATS = {
     skipped: 0,
     deleted: 0,
     images: 0,
-    errors: 0
+    errors: 0,
+    isPartial: false
 };
+
+const START_TIME = new Date().getTime();
+const MAX_RUNTIME = 330000; // 5.5 minutes (Limit is 6)
 
 // This function runs automatically every day
 function updateWebsiteData() {
@@ -66,8 +70,12 @@ Date: ${new Date().toLocaleString()} (Pakistan Time)
 - Total Images Processed: ${STATS.images}
 - Encountered Errors: ${STATS.errors}
 
+${STATS.isPartial ? '⚠️ NOTE: This was a PARTIAL sync because the script reached the 6-minute Google limit. The remaining files will be processed in the next run.' : '✅ Full Sync Complete.'}
+
 Website Status: ✅ UPDATED & LIVE
-GitHub Repo: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}
+🔗 Live Website: https://${GITHUB_REPO_OWNER}.github.io/${GITHUB_REPO_NAME}/
+🔗 Google Drive Folder: https://drive.google.com/drive/u/0/folders/${ROOT_FOLDER_ID}
+🔗 GitHub Repo: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}
 YouTube Channel: Your Channel (Unlisted)
 
 The next sync is scheduled for tomorrow at 3:00 AM.
@@ -126,33 +134,44 @@ function uploadFileToYouTube(fileId, title) {
         const file = DriveApp.getFileById(fileId);
         const blob = file.getBlob();
 
-        // CLEAN AND TRIM TITLE (YouTube limit is 100)
-        let cleanTitle = (title || file.getName())
-            .replace(/[^\x00-\x7F]/g, "") // Remove non-ASCII for safety
-            .replace(/\.mp4|\.mov|\.avi/gi, "") // Remove extension
-            .trim();
+        // CLEAN AND TRIM TITLE
+        let cleanTitle = title.replace(/[^\x00-\x7F]/g, "").trim();
+        if (cleanTitle.length > 95) cleanTitle = cleanTitle.substring(0, 95);
 
-        if (cleanTitle.length > 95) cleanTitle = cleanTitle.substring(0, 95) + "...";
-        if (cleanTitle.length === 0) cleanTitle = "Madni Wooden Legacy Video";
+        // Check if we just need to update an existing video's title
+        let existingId = getYoutubeIdFromDescription(file);
+        if (existingId) {
+            try {
+                const videoData = {
+                    id: existingId,
+                    snippet: {
+                        title: cleanTitle,
+                        description: 'Updated automatically from Madni Wooden Legacy Gallery',
+                        categoryId: '22'
+                    }
+                };
+                YouTube.Videos.update(videoData, 'snippet');
+                return existingId;
+            } catch (e) {
+                console.warn('Metadata update failed for ' + existingId);
+            }
+        }
 
         const resource = {
             snippet: {
                 title: cleanTitle,
                 description: 'Uploaded automatically from Madni Wooden Legacy Gallery',
-                categoryId: '22' // People & Blogs
+                categoryId: '22'
             },
-            status: {
-                privacyStatus: 'unlisted' // As requested
-            }
+            status: { privacyStatus: 'unlisted' }
         };
 
-        // This is the call that requires the YouTube Service
         const video = YouTube.Videos.insert(resource, 'snippet,status', blob);
         return video.id;
     } catch (e) {
         console.error('❌ YouTube Upload Failed: ' + e.toString());
         if (e.toString().includes('exceeded') || e.toString().includes('quota')) {
-            console.warn('⚠️ DAILY UPLOAD LIMIT REACHED. Script will skip further uploads today.');
+            console.warn('⚠️ DAILY UPLOAD LIMIT REACHED.');
             QUOTA_EXCEEDED = true;
         }
         return null;
@@ -224,6 +243,12 @@ function generateProjectsData() {
 
             // 2. Process each file with a serial number
             collectedFiles.forEach((item, index) => {
+                // TIMEOUT CHECK
+                if (new Date().getTime() - START_TIME > MAX_RUNTIME) {
+                    STATS.isPartial = true;
+                    return;
+                }
+
                 const f = item.file;
                 const driveId = f.getId();
                 GLOBAL_DISCOVERED_DRIVE_IDS.push(driveId);
