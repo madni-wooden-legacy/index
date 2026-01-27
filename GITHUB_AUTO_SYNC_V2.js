@@ -134,7 +134,7 @@ function getOrCreateDataStore() {
             console.warn('Store corrupt. Resetting.');
         }
     }
-    return { categoryState: {}, projects: [], lastPushHash: '' };
+    return { categoryState: {}, projects: [], lastPushHash: '', ytMetadata: {} };
 }
 
 function saveDataStore(data) {
@@ -202,7 +202,7 @@ function generateProjectsData(store) {
         while (subs.hasNext()) {
             const sub = subs.next();
             const title = capitalize(sub.getName().replace(/-/g, ' '));
-            const media = processFilesInFolder(sub, title);
+            const media = processFilesInFolder(sub, title, store);
 
             if (STATS.isPartial) { CATEGORY_COMPLETED_SUCCESSFULLY = false; break; }
 
@@ -216,7 +216,7 @@ function generateProjectsData(store) {
         if (!CATEGORY_COMPLETED_SUCCESSFULLY) continue; // Rollback this category in state
 
         // Process Root Path
-        const rootMedia = processFilesInFolder(cat, name);
+        const rootMedia = processFilesInFolder(cat, name, store);
         if (STATS.isPartial) { CATEGORY_COMPLETED_SUCCESSFULLY = false; continue; }
 
         if (rootMedia.length) {
@@ -313,7 +313,7 @@ function processFilesInFolder(folder, prefix, store) {
                 yt = uploadFileToYouTube(id, title);
                 if (yt) {
                     setYoutubeIdInDescription(f, yt);
-                    updateSyncTracker(id, yt);
+                    updateSyncTracker(id, yt, store);
                     STATS.newUploads++;
                 } else STATS.errors++;
             } else {
@@ -360,12 +360,9 @@ function uploadFileToYouTube(fileId, title) {
     }
 }
 
-function refreshYouTubeMetadata(videoId, expectedTitle) {
-    // This is a simple logic to avoid hitting YT API too hard.
-    // In a production app, we would cache the YT title, but for now we just try a lightweight update
-    // using a property to remember the last synced title.
-    const props = PropertiesService.getScriptProperties();
-    const lastTitle = props.getProperty('YT_TITLE_' + videoId);
+function refreshYouTubeMetadata(videoId, expectedTitle, store) {
+    if (!store.ytMetadata) store.ytMetadata = {};
+    const lastTitle = store.ytMetadata['TITLE_' + videoId];
 
     if (lastTitle !== expectedTitle) {
         try {
@@ -374,7 +371,7 @@ function refreshYouTubeMetadata(videoId, expectedTitle) {
                 id: videoId,
                 snippet: { title: cleanTitle, categoryId: '22', description: 'Madni Wooden Legacy Catalog Video' }
             }, 'snippet');
-            props.setProperty('YT_TITLE_' + videoId, expectedTitle);
+            store.ytMetadata['TITLE_' + videoId] = expectedTitle;
             console.log('🔄 YouTube metadata refreshed for: ' + videoId);
         } catch (e) {
             console.warn('Metadata refresh failed: ' + videoId);
@@ -391,19 +388,18 @@ function setYoutubeIdInDescription(file, id) {
     file.setDescription('youtube:' + id);
 }
 
-function updateSyncTracker(driveId, youtubeId) {
-    const props = PropertiesService.getScriptProperties();
-    const map = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
-    map[driveId] = youtubeId;
-    props.setProperty('YT_SYNC_MAP', JSON.stringify(map));
+function updateSyncTracker(driveId, youtubeId, store) {
+    if (!store.ytMetadata) store.ytMetadata = {};
+    if (!store.ytMetadata.MAP) store.ytMetadata.MAP = {};
+    store.ytMetadata.MAP[driveId] = youtubeId;
 }
 
 // ==========================
 // CLEANUP & DELETIONS
 // ==========================
-function syncYouTubeDeletions() {
-    const props = PropertiesService.getScriptProperties();
-    const map = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
+function syncYouTubeDeletions(store) {
+    if (!store.ytMetadata || !store.ytMetadata.MAP) return;
+    const map = store.ytMetadata.MAP;
 
     Object.keys(map).forEach(driveId => {
         if (!GLOBAL_DISCOVERED_DRIVE_IDS.includes(driveId)) {
@@ -415,8 +411,6 @@ function syncYouTubeDeletions() {
             } catch (_) { delete map[driveId]; }
         }
     });
-
-    props.setProperty('YT_SYNC_MAP', JSON.stringify(map));
 }
 
 // ==========================
@@ -427,12 +421,23 @@ function scatterMedia(list) {
     const vids = list.filter(x => x.type !== 'image');
     const imgs = list.filter(x => x.type === 'image');
     if (!vids.length || !imgs.length) return list;
+
     const out = [];
-    const step = Math.max(1, Math.floor(imgs.length / vids.length));
+    // Calculate base step
+    const baseStep = Math.max(1, Math.floor(imgs.length / vids.length));
+
     let i = 0, v = 0;
     while (i < imgs.length || v < vids.length) {
-        for (let s = 0; s < step && i < imgs.length; s++) out.push(imgs[i++]);
-        if (v < vids.length) out.push(vids[v++]);
+        // Add a small random jitter to the step (0 or 1 extra images)
+        const jitter = Math.random() > 0.7 ? 1 : 0;
+        const currentStep = Math.max(1, baseStep + (v % 2 === 0 ? jitter : -jitter));
+
+        for (let s = 0; s < currentStep && i < imgs.length; s++) {
+            out.push(imgs[i++]);
+        }
+        if (v < vids.length) {
+            out.push(vids[v++]);
+        }
     }
     return out;
 }
