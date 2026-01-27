@@ -631,13 +631,9 @@ function initContactForm() {
 
     const handleSubmission = (method) => {
         // Get values
-        const nameInput = form.querySelector('input[type="text"]');
-        const phoneInput = form.querySelector('input[type="tel"]');
-        const messageInput = form.querySelector('textarea');
-
-        const name = nameInput.value;
-        const phone = phoneInput.value;
-        const message = messageInput.value;
+        const name = form.querySelector('input[placeholder="Your Name"]').value;
+        const phone = form.querySelector('input[placeholder="0300..."]').value;
+        const message = form.querySelector('textarea').value;
 
         if (!name || !message) {
             alert('Please fill in your name and message.');
