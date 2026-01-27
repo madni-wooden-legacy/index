@@ -413,7 +413,7 @@ function refreshYouTubeMetadata(videoId, expectedTitle, store) {
             store.ytMetadata['TITLE_' + videoId] = expectedTitle;
             console.log('🔄 YouTube metadata refreshed for: ' + videoId);
         } catch (e) {
-            console.warn('Metadata refresh failed: ' + videoId);
+            console.warn(`Metadata refresh failed for ${videoId}: ${e}`);
         }
     }
 }
