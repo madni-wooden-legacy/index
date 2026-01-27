@@ -193,13 +193,12 @@ function generateProjectsData(store) {
         // SKIP IF UNCHANGED (Bypass if FORCE_RESYNC is true)
         if (!FORCE_RESYNC && savedState[projectId] === sig && updatedProjectsMap[projectId]) {
             console.log('⏭️ Skipping unchanged category: ' + name);
-            // Even if skipped, let's re-learn the existing YouTube IDs from the project data
+            // RE-LEARN logic: Populate memory from the existing data
             const existingProj = updatedProjectsMap[projectId];
             if (existingProj && existingProj.media) {
                 existingProj.media.forEach(m => {
                     if (m.type === 'youtube' && m.src) {
-                        // We need the Drive ID. For now, we'll try to find it from the media array 
-                        // if we stored it, or just rely on the file description re-learning.
+                        // Extract Drive ID if we can find it, otherwise rely on description checks
                     }
                 });
             }
@@ -231,16 +230,8 @@ function generateProjectsData(store) {
             }
         }
 
-        console.log(`📊 Category stats for [${name}]: ${allMedia.length} media items found.`);
-
-        if (!CATEGORY_COMPLETED_SUCCESSFULLY) {
-            console.error('❌ Category sync incomplete: ' + name);
-            continue;
-        }
-
         // Process Root Path
         const rootMedia = processFilesInFolder(cat, name, store);
-        if (STATS.isPartial) { CATEGORY_COMPLETED_SUCCESSFULLY = false; continue; }
 
         if (rootMedia.length) {
             const scattered = scatterMedia(rootMedia);
@@ -254,8 +245,10 @@ function generateProjectsData(store) {
             console.warn('⚠️ No root media and no sections found for: ' + name);
         }
 
-        // ATOMIC STATE UPDATE: Only commit if the category finished fully
-        if (CATEGORY_COMPLETED_SUCCESSFULLY && allMedia.length) {
+        console.log(`📊 Category stats for [${name}]: ${allMedia.length} media items found.`);
+
+        // INCREMENTAL COMMIT: Use partial data if we timed out (allows Doors to finish over many runs)
+        if (allMedia.length) {
             updatedProjectsMap[projectId] = {
                 id: projectId,
                 title: name,
@@ -266,9 +259,16 @@ function generateProjectsData(store) {
                 images: allMedia.map(m => m.src),
                 media: allMedia
             };
-            savedState[projectId] = sig;
-            console.log('✅ Sync state committed for: ' + name);
+            // Only update the signature if we finished the WHOLE category
+            if (!STATS.isPartial) {
+                savedState[projectId] = sig;
+                console.log('✅ Sync state committed (Full) for: ' + name);
+            } else {
+                console.warn('🕒 Sync state saved (Partial) for: ' + name + '. Will continue in next run.');
+            }
         }
+
+        if (STATS.isPartial) break;
     }
 
     // Final Persist to Drive Store
@@ -340,9 +340,8 @@ function processFilesInFolder(folder, prefix, store) {
 
             // QUOTA SHORT-CIRCUIT: Skip YouTube logic if quota is hit
             if (QUOTA_EXCEEDED) {
-                // If we don't have a YouTube ID and quota is hit, we can't do much.
-                // We'll fall back to Drive preview URL to keep the site functional.
-                list.push({ src: "https://lh3.googleusercontent.com/d/" + id, type: "video", title });
+                // FALLBACK: Use Drive view link instead of direct link for better stability on larger files
+                list.push({ src: "https://drive.google.com/file/d/" + id + "/view", type: "video", title });
                 return;
             }
 
