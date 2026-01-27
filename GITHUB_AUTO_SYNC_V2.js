@@ -69,7 +69,7 @@ function updateWebsiteData() {
         const projectsData = generateProjectsData(store);
 
         // 3. YOUTUBE CLEANUP
-        syncYouTubeDeletions();
+        syncYouTubeDeletions(store);
 
         // 4. IDEMPOTENT GITHUB UPDATE (Only push if hash changed)
         const content = `let projects = ${JSON.stringify(projectsData, null, 2)};`;
@@ -129,7 +129,9 @@ function getOrCreateDataStore() {
     if (files.hasNext()) {
         const file = files.next();
         try {
-            return JSON.parse(file.getBlob().getDataAsString());
+            const store = JSON.parse(file.getBlob().getDataAsString());
+            if (!store.ytMetadata) store.ytMetadata = {};
+            return store;
         } catch (e) {
             console.warn('Store corrupt. Resetting.');
         }
@@ -398,7 +400,7 @@ function updateSyncTracker(driveId, youtubeId, store) {
 // CLEANUP & DELETIONS
 // ==========================
 function syncYouTubeDeletions(store) {
-    if (!store.ytMetadata || !store.ytMetadata.MAP) return;
+    if (!store || !store.ytMetadata || !store.ytMetadata.MAP) return;
     const map = store.ytMetadata.MAP;
 
     Object.keys(map).forEach(driveId => {
