@@ -28,46 +28,80 @@
     </header>
 
     <div class="section container">
-        <div class="project-details-grid" style="grid-template-columns: 1fr 1fr; align-items:center;">
-            <div>
-                <h2>Get in Touch</h2>
-                <p style="margin-bottom:30px;">Ready to start your project? Contact us for a consultation or quote.</p>
+        <div class="contact-wrapper">
+            <!-- Left Info Panel -->
+            <div class="contact-info-panel">
+                <div class="section-title" style="text-align:left; margin-bottom:40px;">
+                    <h3>Contact <span class="gold">Us</span></h3>
+                    <p>Have a question or a custom project? Reach out to us through any of these channels.</p>
+                </div>
 
-                <div class="feature-box" style="padding:0; margin-bottom:20px; text-align:left;">
-                    <i class="fas fa-phone gold-icon" style="font-size:1.2rem;"></i>
-                    <span style="font-weight:600; font-size:1.1rem; margin-left:10px;">+92 300 4339143</span>
-                </div>
-                <div class="feature-box" style="padding:0; margin-bottom:20px; text-align:left;">
-                    <i class="fas fa-map-marker-alt gold-icon" style="font-size:1.2rem;"></i>
-                    <span style="font-weight:600; font-size:1.1rem; margin-left:10px;">Defence Colony,
-                        Sheikhupura</span>
-                </div>
-                <div class="feature-box" style="padding:0; margin-bottom:20px; text-align:left;">
-                    <i class="fas fa-envelope gold-icon" style="font-size:1.2rem;"></i>
-                    <span
-                        style="font-weight:600; font-size:1.1rem; margin-left:10px;">madniwoodenlegacy@gmail.com</span>
+                <div class="contact-methods">
+                    <div class="method-item">
+                        <i class="fas fa-user-tie"></i>
+                        <div>
+                            <h4>Owner</h4>
+                            <p>Muhammad Abbas</p>
+                        </div>
+                    </div>
+                    <div class="method-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Location</h4>
+                            <p>Defence Colony, Sheikhupura</p>
+                        </div>
+                    </div>
+                    <div class="method-item">
+                        <i class="fas fa-phone-alt"></i>
+                        <div>
+                            <h4>Call/WhatsApp</h4>
+                            <p>+92 300 4339143</p>
+                        </div>
+                    </div>
+                    <div class="method-item">
+                        <i class="fas fa-envelope-open"></i>
+                        <div>
+                            <h4>Support</h4>
+                            <p>madniwoodenlegacy@gmail.com</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <form style="background:#f9f9f9; padding:40px; border-radius:4px;">
-                <h3 style="margin-bottom:20px;">Send a Message</h3>
-                <div style="margin-bottom:15px;">
-                    <label style="display:block; margin-bottom:5px; font-weight:600;">Name</label>
-                    <input type="text" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;"
-                        placeholder="Your Name">
-                </div>
-                <div style="margin-bottom:15px;">
-                    <label style="display:block; margin-bottom:5px; font-weight:600;">Phone</label>
-                    <input type="tel" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;"
-                        placeholder="0300...">
-                </div>
-                <div style="margin-bottom:15px;">
-                    <label style="display:block; margin-bottom:5px; font-weight:600;">Message</label>
-                    <textarea rows="4" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;"
-                        placeholder="Tell us about your project..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-gold" style="width:100%;">Send Inquiry</button>
-            </form>
+            <!-- Right Form Panel -->
+            <div class="contact-form-panel">
+                <form id="contact-form">
+                    <h3>Send a Message</h3>
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" placeholder="e.g. Mohid Abbas">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" placeholder="e.g. 0300 1234567">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea rows="5" placeholder="Tell us about your dream design..."></textarea>
+                    </div>
+
+                    <div class="submit-options">
+                        <p>Choose your preferred submission method:</p>
+                        <div class="icon-buttons">
+                            <a href="javascript:void(0)" id="submit-whatsapp" class="contact-icon wa"
+                                title="Send via WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                                <span>WhatsApp</span>
+                            </a>
+                            <a href="javascript:void(0)" id="submit-email" class="contact-icon mail"
+                                title="Send via Email">
+                                <i class="fas fa-envelope"></i>
+                                <span>Email</span>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
