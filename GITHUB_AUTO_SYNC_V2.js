@@ -22,6 +22,8 @@ const MAX_RUNTIME = 330000; // 5.5 minutes
 let QUOTA_EXCEEDED = false;
 let GLOBAL_DISCOVERED_DRIVE_IDS = [];
 let CATEGORY_COMPLETED_SUCCESSFULLY = true;
+const FORCE_RESYNC = false; // Set to true to bypass "unchanged" cache
+const DELETION_SAFE_MODE = true; // Set to false to allow actual YouTube deletions
 
 // ==========================
 // STATS
@@ -69,6 +71,8 @@ function updateWebsiteData() {
         const projectsData = generateProjectsData(store);
 
         // 3. YOUTUBE CLEANUP
+        const trackedCount = store.ytMetadata && store.ytMetadata.MAP ? Object.keys(store.ytMetadata.MAP).length : 0;
+        console.log(`📊 YouTube Sync Status: [${trackedCount}] videos in memory.`);
         syncYouTubeDeletions(store);
 
         // 4. IDEMPOTENT GITHUB UPDATE (Only push if hash changed)
@@ -186,14 +190,24 @@ function generateProjectsData(store) {
         const fp = getFolderFingerprint(cat);
         const sig = fp.latest.toString();
 
-        // SKIP IF UNCHANGED
-        if (savedState[projectId] === sig && updatedProjectsMap[projectId]) {
+        // SKIP IF UNCHANGED (Bypass if FORCE_RESYNC is true)
+        if (!FORCE_RESYNC && savedState[projectId] === sig && updatedProjectsMap[projectId]) {
             console.log('⏭️ Skipping unchanged category: ' + name);
+            // Even if skipped, let's re-learn the existing YouTube IDs from the project data
+            const existingProj = updatedProjectsMap[projectId];
+            if (existingProj && existingProj.media) {
+                existingProj.media.forEach(m => {
+                    if (m.type === 'youtube' && m.src) {
+                        // We need the Drive ID. For now, we'll try to find it from the media array 
+                        // if we stored it, or just rely on the file description re-learning.
+                    }
+                });
+            }
             collectIdsRecursive(cat);
             continue;
         }
 
-        console.log('📂 Processing Category: ' + name);
+        console.log(`📂 [SYNC START] Category: ${name} (ID: ${cat.getId()})`);
         CATEGORY_COMPLETED_SUCCESSFULLY = true; // Reset for atomic tracking
 
         let sections = [];
@@ -212,10 +226,17 @@ function generateProjectsData(store) {
                 const scattered = scatterMedia(media);
                 sections.push({ title, images: scattered.map(m => m.src), media: scattered });
                 allMedia = allMedia.concat(scattered);
+            } else {
+                console.warn('⚠️ No media found in section: ' + title);
             }
         }
 
-        if (!CATEGORY_COMPLETED_SUCCESSFULLY) continue; // Rollback this category in state
+        console.log(`📊 Category stats for [${name}]: ${allMedia.length} media items found.`);
+
+        if (!CATEGORY_COMPLETED_SUCCESSFULLY) {
+            console.error('❌ Category sync incomplete: ' + name);
+            continue;
+        }
 
         // Process Root Path
         const rootMedia = processFilesInFolder(cat, name, store);
@@ -229,6 +250,8 @@ function generateProjectsData(store) {
                 media: scattered
             });
             allMedia = allMedia.concat(scattered);
+        } else if (!sections.length) {
+            console.warn('⚠️ No root media and no sections found for: ' + name);
         }
 
         // ATOMIC STATE UPDATE: Only commit if the category finished fully
@@ -270,10 +293,21 @@ function collectIdsRecursive(folder) {
 // I will just provide the updated function for processFilesInFolder
 
 function processFilesInFolder(folder, prefix, store) {
+    console.log(`   📂 Entering: ${folder.getName()}`);
     let list = [];
     let files = [];
+
+    // Support for both regular files and shortcuts
     const it = folder.getFiles();
     while (it.hasNext()) files.push(it.next());
+
+    try {
+        const sc = folder.getShortcuts();
+        while (sc.hasNext()) {
+            const target = sc.next().getTargetFile();
+            if (target) files.push(target);
+        }
+    } catch (e) { /* Old Drive API version support */ }
 
     files.sort((a, b) => a.getName().localeCompare(b.getName()));
 
@@ -297,7 +331,9 @@ function processFilesInFolder(folder, prefix, store) {
         }
 
         const mime = f.getMimeType();
-        const isVideo = mime.includes('video');
+        const isVideo = mime.includes('video') || ['.mp4', '.mov', '.avi', '.mkv'].some(ex => name.toLowerCase().endsWith(ex));
+
+        console.log(`📄 Found: ${name} | Mime: ${mime} | isVideo: ${isVideo}`);
 
         if (isVideo) {
             let yt = getYoutubeIdFromDescription(f);
@@ -320,13 +356,15 @@ function processFilesInFolder(folder, prefix, store) {
                 } else STATS.errors++;
             } else {
                 refreshYouTubeMetadata(yt, title, store);
+                updateSyncTracker(id, yt, store); // RE-LEARN into memory
                 STATS.skipped++;
             }
 
             if (yt) {
                 list.push({ src: yt, type: "youtube", title });
             } else {
-                list.push({ src: "https://lh3.googleusercontent.com/d/" + id, type: "video", title });
+                // Use standard Drive URL that getDriveId can parse
+                list.push({ src: "https://drive.google.com/file/d/" + id + "/view", type: "video", title });
             }
 
         } else if (mime.includes('image')) {
@@ -393,7 +431,11 @@ function setYoutubeIdInDescription(file, id) {
 function updateSyncTracker(driveId, youtubeId, store) {
     if (!store.ytMetadata) store.ytMetadata = {};
     if (!store.ytMetadata.MAP) store.ytMetadata.MAP = {};
-    store.ytMetadata.MAP[driveId] = youtubeId;
+
+    // Only update if changed or not exists
+    if (store.ytMetadata.MAP[driveId] !== youtubeId) {
+        store.ytMetadata.MAP[driveId] = youtubeId;
+    }
 }
 
 // ==========================
@@ -405,12 +447,20 @@ function syncYouTubeDeletions(store) {
 
     Object.keys(map).forEach(driveId => {
         if (!GLOBAL_DISCOVERED_DRIVE_IDS.includes(driveId)) {
+            const ytId = map[driveId];
+            if (DELETION_SAFE_MODE) {
+                console.warn(`🕒 [SAFE MODE] Would delete orphan YouTube video: ${ytId} (Drive ID: ${driveId})`);
+                return;
+            }
             try {
-                YouTube.Videos.remove(map[driveId]);
+                YouTube.Videos.remove(ytId);
                 delete map[driveId];
                 STATS.deleted++;
-                console.log('🗑️ Deleted orphan YouTube video.');
-            } catch (_) { delete map[driveId]; }
+                console.log(`🗑️ Deleted orphan YouTube video: ${ytId}`);
+            } catch (e) {
+                console.error(`❌ Delete failed for ${ytId}: ` + e);
+                delete map[driveId];
+            }
         }
     });
 }

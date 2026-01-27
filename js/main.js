@@ -187,9 +187,8 @@ function renderProjects(items) {
             </div>`;
         } else if (mediaItem.type === 'video') {
             const videoId = getDriveId(mediaItem.src);
-            const streamUrl = `https://drive.google.com/uc?id=${videoId}&export=download`;
             mediaHtml = `<div class="video-container" style="position:relative; width:100%; height:100%; background:#111; overflow:hidden;">
-                <video src="${streamUrl}" autoplay muted loop playsinline style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; pointer-events:none;"></video>
+                <iframe src="https://drive.google.com/file/d/${videoId}/preview" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
             </div>`;
         } else {
             mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'">`;
@@ -429,8 +428,7 @@ function initHomePageFeatured() {
             backgroundContent = `<iframe src="${convertToVideoUrl(ytId, true)}" class="bg-video" style="position:absolute; top:-10%; left:0; width:100%; height:120%; border:none; pointer-events:none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" frameborder="0"></iframe>`;
         } else if (mediaItem.type === 'video') {
             const videoId = getDriveId(mediaItem.src);
-            const streamUrl = `https://drive.google.com/uc?id=${videoId}&export=download`;
-            backgroundContent = `<video src="${streamUrl}" class="bg-video" autoplay muted loop playsinline style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; pointer-events:none;"></video>`;
+            backgroundContent = `<iframe src="https://drive.google.com/file/d/${videoId}/preview" class="bg-video" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>`;
         } else {
             backgroundContent = `<img src="${mediaItem.src}" class="bg-img" alt="${p.title}" loading="lazy">`;
         }
