@@ -480,12 +480,28 @@ function updateGitHubFile(path, content) {
 // ==========================
 // NOTIFICATIONS
 // ==========================
-function sendStatusEmail(batch, stats) {
-    MailApp.sendEmail(
-        Session.getActiveUser().getEmail(),
-        `🚀 Madni Website Batch Report (${batch})`,
-        "Sync completed successfully.\n\n" + JSON.stringify(stats, null, 2)
-    );
+function sendStatusEmail(batchCount, stats) {
+    const recipient = Session.getActiveUser().getEmail();
+    const subject = `🚀 Madni Website Batch Report (${batchCount} Runs)`;
+
+    const body = `
+MADNI WEBSITE SYNC SUMMARY (Batch of ${batchCount} runs)
+------------------------------------------------------
+Total New Videos Uploaded: ${stats.newUploads}
+Videos Already Synced: ${stats.skipped}
+Dead Videos Removed: ${stats.deleted}
+Total Website Images: ${stats.images}
+Total Errors in Batch: ${stats.errors}
+
+${stats.errorsList && stats.errorsList.length > 0 ? `⚠️ ERROR DETAILS:\n- ${stats.errorsList.join('\n- ')}` : '✅ No errors encountered.'}
+
+Website Status: ✅ LIVE & FULLY SYNCED
+🔗 Live Website: https://${GITHUB_REPO_OWNER}.github.io/${GITHUB_REPO_NAME}/
+🔗 Google Drive Folder: https://drive.google.com/drive/u/0/folders/${ROOT_FOLDER_ID}
+🔗 GitHub Repo: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}
+    `;
+
+    MailApp.sendEmail(recipient, subject, body);
 }
 
 function sendErrorEmail(msg) {

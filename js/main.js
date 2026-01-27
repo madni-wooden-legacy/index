@@ -389,7 +389,7 @@ function initProjectDetails() {
 
     // Update Inquiry Button
     const waMsg = `Hi, I am interested in the design: ${project.title}. Can you provide a quote?`;
-    document.getElementById('wa-inquiry').href = `https://wa.me/923001234567?text=${encodeURIComponent(waMsg)}`;
+    document.getElementById('wa-inquiry').href = `https://wa.me/923004339143?text=${encodeURIComponent(waMsg)}`;
 }
 
 /* ================= HOME PAGE LOGIC ================= */
