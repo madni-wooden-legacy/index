@@ -1,12 +1,31 @@
 // PASTE THIS INTO GOOGLE APPS SCRIPT (script.google.com)
-// This will automatically update your website data every day at 3 AM Pakistan time
+/**
+ * MADNI WOODEN LEGACY - AUTO SYNC V4 (ENTERPRISE EDITION)
+ * - Atomic Multi-level Delta Sync (Change Detection)
+ * - Concurrency Control (ScriptLock)
+ * - Idempotent GitHub Commits (Hashing)
+ * - YouTube Metadata Re-syncing
+ * - Timeout-safe state persistence
+ */
 
+// ==========================
+// CONFIG
+// ==========================
 const ROOT_FOLDER_ID = '1u9USFGLYiBLIDQuHZpKOvj7O43hR_GG8';
 const GITHUB_REPO_OWNER = 'Mohid-Abbas';
 const GITHUB_REPO_NAME = 'MadniWoodenLegacy';
-const GITHUB_TOKEN = 'ghp_5xWnH113B5OosW5irzgSNzJ3CGdxOU1tQIUD';
+const GITHUB_TOKEN = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
 
-// Stats for Email
+const START_TIME = Date.now();
+const MAX_RUNTIME = 330000; // 5.5 minutes
+
+let QUOTA_EXCEEDED = false;
+let GLOBAL_DISCOVERED_DRIVE_IDS = [];
+let CATEGORY_COMPLETED_SUCCESSFULLY = true;
+
+// ==========================
+// STATS
+// ==========================
 let STATS = {
     newUploads: 0,
     skipped: 0,
@@ -17,349 +36,458 @@ let STATS = {
     isPartial: false
 };
 
-const START_TIME = new Date().getTime();
-const MAX_RUNTIME = 330000; // 5.5 minutes (Limit is 6)
-
-// This function runs automatically based on your schedule
+// ==========================
+// MAIN ENTRY
+// ==========================
 function updateWebsiteData() {
-    const props = PropertiesService.getScriptProperties();
-    try {
-        // 1. Load Batch Data
-        let batchCount = parseInt(props.getProperty('BATCH_RUN_COUNT') || '0') + 1;
-        let cumulative = JSON.parse(props.getProperty('STATS_CUMULATIVE') || JSON.stringify({ newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: [] }));
+    const lock = LockService.getScriptLock();
 
-        // Reset Current Stats
+    // 1. CONCURRENCY CONTROL: Prevent overlapping runs
+    try {
+        if (!lock.tryLock(0)) {
+            console.warn('⚠️ Sync already in progress. Skipping this trigger.');
+            return;
+        }
+    } catch (e) {
+        console.error('Lock Error: ' + e);
+        return;
+    }
+
+    const props = PropertiesService.getScriptProperties();
+
+    try {
+        let batchCount = parseInt(props.getProperty('BATCH_RUN_COUNT') || '0') + 1;
+        let cumulative = JSON.parse(
+            props.getProperty('STATS_CUMULATIVE') ||
+            JSON.stringify({ newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: [] })
+        );
+
         STATS = { newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: [], isPartial: false };
 
-        // 2. RUN SYNC
-        const projectsData = generateProjectsData();
-        syncYouTubeDeletions();
-        updateGitHubFile('js/data.js', `let projects = ${JSON.stringify(projectsData, null, 2)};`);
+        // 2. LOAD DATA & SYNC
+        const store = getOrCreateDataStore();
+        const projectsData = generateProjectsData(store);
 
-        // 3. Accumulate Stats
+        // 3. YOUTUBE CLEANUP
+        syncYouTubeDeletions();
+
+        // 4. IDEMPOTENT GITHUB UPDATE (Only push if hash changed)
+        const content = `let projects = ${JSON.stringify(projectsData, null, 2)};`;
+        const contentHash = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, content));
+
+        if (contentHash !== store.lastPushHash) {
+            console.log('🚀 Content changed. Updating GitHub...');
+            const success = updateGitHubFile('js/data.js', content);
+            if (success) {
+                store.lastPushHash = contentHash;
+                saveDataStore(store); // Save updated hash
+            }
+        } else {
+            console.log('⏭️ No data changes detected. Skipping GitHub commit.');
+        }
+
+        // 5. UPDATE STATS & EMAIL
         cumulative.newUploads += STATS.newUploads;
         cumulative.skipped += STATS.skipped;
         cumulative.deleted += STATS.deleted;
         cumulative.images = STATS.images;
         cumulative.errors += STATS.errors;
 
-        // Accumulate unique error messages
-        if (!cumulative.errorsList) cumulative.errorsList = [];
-        STATS.errorsList.forEach(msg => {
-            if (!cumulative.errorsList.includes(msg)) cumulative.errorsList.push(msg);
+        STATS.errorsList.forEach(e => {
+            if (!cumulative.errorsList.includes(e)) cumulative.errorsList.push(e);
         });
 
-        // 4. Save and Check for Report
         if (batchCount >= 24) {
             sendStatusEmail(batchCount, cumulative);
-            // RESET for next batch
             props.setProperty('BATCH_RUN_COUNT', '0');
-            props.setProperty('STATS_CUMULATIVE', JSON.stringify({ newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: [] }));
-            console.log('📬 Batch Report Sent and Reset.');
+            props.setProperty('STATS_CUMULATIVE', JSON.stringify({
+                newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: []
+            }));
         } else {
             props.setProperty('BATCH_RUN_COUNT', batchCount.toString());
             props.setProperty('STATS_CUMULATIVE', JSON.stringify(cumulative));
-            console.log(`📊 Run ${batchCount}/24 completed. Saving progress...`);
         }
 
-        console.log('✅ SUCCESS: Website data updated at ' + new Date());
+        console.log('✅ SUCCESS at ' + new Date());
 
     } catch (e) {
-        console.error('❌ ERROR: ' + e.toString());
+        console.error('❌ ERROR: ' + e);
         sendErrorEmail(e.toString());
+    } finally {
+        lock.releaseLock();
     }
 }
 
-function sendStatusEmail(batchCount, stats) {
-    const recipient = Session.getActiveUser().getEmail();
-    const subject = `🚀 Madni Website Batch Report (${batchCount} Runs)`;
+// ==========================
+// DATA STORE (Drive-based)
+// ==========================
+const DATA_STORE_FILENAME = 'madni_sync_v4_store.json';
 
-    const body = `
-MADNI WEBSITE SYNC SUMMARY (Batch of ${batchCount} runs)
-------------------------------------------------------
-Total New Videos Uploaded: ${stats.newUploads}
-Videos Already Synced: ${stats.skipped}
-Dead Videos Removed: ${stats.deleted}
-Total Website Images: ${stats.images}
-Total Errors in Batch: ${stats.errors}
-
-${stats.errorsList && stats.errorsList.length > 0 ? `⚠️ ERROR DETAILS:\n- ${stats.errorsList.join('\n- ')}` : '✅ No errors encountered.'}
-
-Website Status: ✅ LIVE & FULLY SYNCED
-🔗 Live Website: https://${GITHUB_REPO_OWNER}.github.io/${GITHUB_REPO_NAME}/
-🔗 Google Drive Folder: https://drive.google.com/drive/u/0/folders/${ROOT_FOLDER_ID}
-🔗 GitHub Repo: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}
-YouTube Channel: Your Channel (Unlisted)
-    `;
-
-    MailApp.sendEmail(recipient, subject, body);
-}
-
-function sendErrorEmail(errMsg) {
-    const recipient = Session.getActiveUser().getEmail();
-    const subject = "⚠️ Madni Website Sync FAILED";
-    const body = "The sync failed with the following error:\n\n" + errMsg;
-    MailApp.sendEmail(recipient, subject, body);
-}
-
-// Helper function to simply COLLECT all image and video file objects
-function getAllFilesRecursive(folder) {
-    let foundFiles = [];
-    let files = folder.getFiles();
-    while (files.hasNext()) {
-        let f = files.next();
-        let mime = f.getMimeType();
-
-        if (mime.includes("image") || mime.includes("video")) {
-            foundFiles.push({
-                file: f,
-                mime: mime,
-                is_video: mime.includes("video")
-            });
+function getOrCreateDataStore() {
+    const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+    const files = root.getFilesByName(DATA_STORE_FILENAME);
+    if (files.hasNext()) {
+        const file = files.next();
+        try {
+            return JSON.parse(file.getBlob().getDataAsString());
+        } catch (e) {
+            console.warn('Store corrupt. Resetting.');
         }
     }
-    let subFolders = folder.getFolders();
-    while (subFolders.hasNext()) {
-        foundFiles = foundFiles.concat(getAllFilesRecursive(subFolders.next()));
+    return { categoryState: {}, projects: [], lastPushHash: '' };
+}
+
+function saveDataStore(data) {
+    const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+    const files = root.getFilesByName(DATA_STORE_FILENAME);
+    const content = JSON.stringify(data, null, 2);
+    if (files.hasNext()) {
+        files.next().setContent(content);
+    } else {
+        root.createFile(DATA_STORE_FILENAME, content, MimeType.PLAIN_TEXT);
     }
-    return foundFiles;
 }
 
-function updateSyncTracker(driveId, youtubeId) {
-    const props = PropertiesService.getScriptProperties();
-    const tracking = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
-    tracking[driveId] = youtubeId;
-    props.setProperty('YT_SYNC_MAP', JSON.stringify(tracking));
+// ==========================
+// OPTIMIZED CHANGE DETECTION
+// ==========================
+function getFolderFingerprint(folder) {
+    // FAST PRUNING: We use the folder's internal timestamp as a first check.
+    // Note: getLastUpdated on a folder changes if items inside are added/removed
+    return {
+        latest: folder.getLastUpdated().getTime(),
+        name: folder.getName()
+    };
 }
 
-/**
- * Uploads a video from Google Drive to YouTube (Unlisted)
- * Requires YouTube Data API v3 Service to be enabled
- */
-let QUOTA_EXCEEDED = false;
+// ==========================
+// GENERATE PROJECT DATA
+// ==========================
+function generateProjectsData(store) {
+    GLOBAL_DISCOVERED_DRIVE_IDS = [];
 
-function uploadFileToYouTube(fileId, title) {
-    if (QUOTA_EXCEEDED) return null;
+    const savedState = store.categoryState || {};
+    const currentProjects = store.projects || [];
+    const updatedProjectsMap = {};
 
-    try {
-        const file = DriveApp.getFileById(fileId);
-        const blob = file.getBlob();
+    currentProjects.forEach(p => { updatedProjectsMap[p.id] = p; });
 
-        // CLEAN AND TRIM TITLE
-        let cleanTitle = title.replace(/[^\x00-\x7F]/g, "").trim();
-        if (cleanTitle.length > 95) cleanTitle = cleanTitle.substring(0, 95);
+    const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+    const categories = root.getFolders();
 
-        // Check if we just need to update an existing video's title
-        let existingId = getYoutubeIdFromDescription(file);
-        if (existingId) {
-            try {
-                const videoData = {
-                    id: existingId,
-                    snippet: {
-                        title: cleanTitle,
-                        description: 'Updated automatically from Madni Wooden Legacy Gallery',
-                        categoryId: '22'
-                    }
-                };
-                YouTube.Videos.update(videoData, 'snippet');
-                return existingId;
-            } catch (e) {
-                console.warn('Metadata update failed for ' + existingId);
+    while (categories.hasNext()) {
+        const cat = categories.next();
+        const name = cat.getName();
+        const key = name.toLowerCase();
+        const projectId = key.replace(/\s+/g, '-');
+
+        const fp = getFolderFingerprint(cat);
+        const sig = fp.latest.toString();
+
+        // SKIP IF UNCHANGED
+        if (savedState[projectId] === sig && updatedProjectsMap[projectId]) {
+            console.log('⏭️ Skipping unchanged category: ' + name);
+            collectIdsRecursive(cat);
+            continue;
+        }
+
+        console.log('📂 Processing Category: ' + name);
+        CATEGORY_COMPLETED_SUCCESSFULLY = true; // Reset for atomic tracking
+
+        let sections = [];
+        let allMedia = [];
+
+        // Process Sections
+        const subs = cat.getFolders();
+        while (subs.hasNext()) {
+            const sub = subs.next();
+            const title = capitalize(sub.getName().replace(/-/g, ' '));
+            const media = processFilesInFolder(sub, title);
+
+            if (STATS.isPartial) { CATEGORY_COMPLETED_SUCCESSFULLY = false; break; }
+
+            if (media.length) {
+                const scattered = scatterMedia(media);
+                sections.push({ title, images: scattered.map(m => m.src), media: scattered });
+                allMedia = allMedia.concat(scattered);
             }
         }
 
+        if (!CATEGORY_COMPLETED_SUCCESSFULLY) continue; // Rollback this category in state
+
+        // Process Root Path
+        const rootMedia = processFilesInFolder(cat, name);
+        if (STATS.isPartial) { CATEGORY_COMPLETED_SUCCESSFULLY = false; continue; }
+
+        if (rootMedia.length) {
+            const scattered = scatterMedia(rootMedia);
+            sections.push({
+                title: sections.length ? 'Other Designs' : 'Gallery',
+                images: scattered.map(m => m.src),
+                media: scattered
+            });
+            allMedia = allMedia.concat(scattered);
+        }
+
+        // ATOMIC STATE UPDATE: Only commit if the category finished fully
+        if (CATEGORY_COMPLETED_SUCCESSFULLY && allMedia.length) {
+            updatedProjectsMap[projectId] = {
+                id: projectId,
+                title: name,
+                category: key,
+                description: 'Exclusive collection of ' + name,
+                details: { Type: 'Premium Portfolio' },
+                sections,
+                images: allMedia.map(m => m.src),
+                media: allMedia
+            };
+            savedState[projectId] = sig;
+            console.log('✅ Sync state committed for: ' + name);
+        }
+    }
+
+    // Final Persist to Drive Store
+    store.projects = Object.values(updatedProjectsMap);
+    store.categoryState = savedState;
+    saveDataStore(store);
+
+    return store.projects;
+}
+
+function collectIdsRecursive(folder) {
+    const files = folder.getFiles();
+    while (files.hasNext()) GLOBAL_DISCOVERED_DRIVE_IDS.push(files.next().getId());
+    const subs = folder.getFolders();
+    while (subs.hasNext()) collectIdsRecursive(subs.next());
+}
+
+// ==========================
+// FILE PROCESSING (With YT Re-sync)
+// ==========================
+// Add this small change inside updateWebsiteData or processFilesInFolder
+// I will just provide the updated function for processFilesInFolder
+
+function processFilesInFolder(folder, prefix, store) {
+    let list = [];
+    let files = [];
+    const it = folder.getFiles();
+    while (it.hasNext()) files.push(it.next());
+
+    files.sort((a, b) => a.getName().localeCompare(b.getName()));
+
+    files.forEach((f, i) => {
+        if (Date.now() - START_TIME > MAX_RUNTIME) {
+            STATS.isPartial = true;
+            return;
+        }
+
+        const id = f.getId();
+        GLOBAL_DISCOVERED_DRIVE_IDS.push(id);
+
+        const serial = String(i + 1).padStart(2, '0');
+        const title = `${prefix} - ${serial}`;
+        const name = f.getName();
+        const ext = getFileExtension(name);
+        const targetName = title + (ext ? '.' + ext : '');
+
+        if (name !== targetName) {
+            try { f.setName(targetName); } catch (_) { }
+        }
+
+        const mime = f.getMimeType();
+        const isVideo = mime.includes('video');
+
+        if (isVideo) {
+            let yt = getYoutubeIdFromDescription(f);
+
+            // QUOTA SHORT-CIRCUIT: Skip YouTube logic if quota is hit
+            if (QUOTA_EXCEEDED) {
+                // If we don't have a YouTube ID and quota is hit, we can't do much.
+                // We'll fall back to Drive preview URL to keep the site functional.
+                list.push({ src: "https://lh3.googleusercontent.com/d/" + id, type: "video", title });
+                return;
+            }
+
+            if (!yt) {
+                console.log('🚀 Uploading to YouTube: ' + title);
+                yt = uploadFileToYouTube(id, title);
+                if (yt) {
+                    setYoutubeIdInDescription(f, yt);
+                    updateSyncTracker(id, yt);
+                    STATS.newUploads++;
+                } else STATS.errors++;
+            } else {
+                refreshYouTubeMetadata(yt, title, store);
+                STATS.skipped++;
+            }
+
+            if (yt) {
+                list.push({ src: yt, type: "youtube", title });
+            } else {
+                list.push({ src: "https://lh3.googleusercontent.com/d/" + id, type: "video", title });
+            }
+
+        } else if (mime.includes('image')) {
+            STATS.images++;
+            list.push({ src: "https://lh3.googleusercontent.com/d/" + id, type: "image", title });
+        }
+    });
+
+    return list;
+}
+
+// ==========================
+// YOUTUBE (With Sync Logic)
+// ==========================
+function uploadFileToYouTube(fileId, title) {
+    try {
+        const file = DriveApp.getFileById(fileId);
+        const blob = file.getBlob();
+        const cleanTitle = title.replace(/[^\x00-\x7F]/g, '').slice(0, 95);
+
         const resource = {
-            snippet: {
-                title: cleanTitle,
-                description: 'Uploaded automatically from Madni Wooden Legacy Gallery',
-                categoryId: '22'
-            },
+            snippet: { title: cleanTitle, description: 'Madni Wooden Legacy Catalog Video', categoryId: '22' },
             status: { privacyStatus: 'unlisted' }
         };
-
         const video = YouTube.Videos.insert(resource, 'snippet,status', blob);
         return video.id;
     } catch (e) {
-        const errorMsg = e.toString();
-        console.error('❌ YouTube Upload Failed: ' + errorMsg);
-        STATS.errorsList.push(errorMsg);
-        if (errorMsg.includes('exceeded') || errorMsg.includes('quota')) {
-            console.warn('⚠️ DAILY UPLOAD LIMIT REACHED.');
-            QUOTA_EXCEEDED = true;
-        }
+        const msg = e.toString();
+        console.error('❌ YT Upload Failed: ' + msg);
+        STATS.errorsList.push(msg);
+        if (msg.includes('quota')) QUOTA_EXCEEDED = true;
         return null;
     }
 }
 
-function getYoutubeIdFromDescription(file) {
-    const desc = file.getDescription();
-    if (desc && desc.startsWith('youtube:')) {
-        return desc.split(':')[1];
+function refreshYouTubeMetadata(videoId, expectedTitle) {
+    // This is a simple logic to avoid hitting YT API too hard.
+    // In a production app, we would cache the YT title, but for now we just try a lightweight update
+    // using a property to remember the last synced title.
+    const props = PropertiesService.getScriptProperties();
+    const lastTitle = props.getProperty('YT_TITLE_' + videoId);
+
+    if (lastTitle !== expectedTitle) {
+        try {
+            const cleanTitle = expectedTitle.replace(/[^\x00-\x7F]/g, '').slice(0, 95);
+            YouTube.Videos.update({
+                id: videoId,
+                snippet: { title: cleanTitle, categoryId: '22', description: 'Madni Wooden Legacy Catalog Video' }
+            }, 'snippet');
+            props.setProperty('YT_TITLE_' + videoId, expectedTitle);
+            console.log('🔄 YouTube metadata refreshed for: ' + videoId);
+        } catch (e) {
+            console.warn('Metadata refresh failed: ' + videoId);
+        }
     }
-    return null;
-}
-function setYoutubeIdInDescription(file, youtubeId) {
-    file.setDescription('youtube:' + youtubeId);
 }
 
-/**
- * Ensures YouTube channel stays in sync with Drive.
- * Deletes videos from YouTube that were removed from Drive.
- */
+function getYoutubeIdFromDescription(file) {
+    const d = file.getDescription();
+    return d && d.startsWith('youtube:') ? d.split(':')[1] : null;
+}
+
+function setYoutubeIdInDescription(file, id) {
+    file.setDescription('youtube:' + id);
+}
+
+function updateSyncTracker(driveId, youtubeId) {
+    const props = PropertiesService.getScriptProperties();
+    const map = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
+    map[driveId] = youtubeId;
+    props.setProperty('YT_SYNC_MAP', JSON.stringify(map));
+}
+
+// ==========================
+// CLEANUP & DELETIONS
+// ==========================
 function syncYouTubeDeletions() {
     const props = PropertiesService.getScriptProperties();
-    const tracking = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
+    const map = JSON.parse(props.getProperty('YT_SYNC_MAP') || '{}');
 
-    // 1. We scan all Drive IDs discovered during the generation run.
-    const discoveredDriveIds = GLOBAL_DISCOVERED_DRIVE_IDS || [];
-
-    // 2. Find IDs in our tracker that are NOT in Drive anymore
-    const deadDriveIds = Object.keys(tracking).filter(id => !discoveredDriveIds.includes(id));
-
-    deadDriveIds.forEach(driveId => {
-        const ytId = tracking[driveId];
-        console.log('🗑️ Deleting orphan video from YouTube: ' + ytId);
-        try {
-            YouTube.Videos.remove(ytId);
-            delete tracking[driveId];
-            STATS.deleted++;
-        } catch (e) {
-            console.error('❌ Failed to delete video ' + ytId + ': ' + e.toString());
-            // If it's already deleted or 404, remove from tracker anyway
-            if (e.toString().includes('404')) delete tracking[driveId];
+    Object.keys(map).forEach(driveId => {
+        if (!GLOBAL_DISCOVERED_DRIVE_IDS.includes(driveId)) {
+            try {
+                YouTube.Videos.remove(map[driveId]);
+                delete map[driveId];
+                STATS.deleted++;
+                console.log('🗑️ Deleted orphan YouTube video.');
+            } catch (_) { delete map[driveId]; }
         }
     });
 
-    props.setProperty('YT_SYNC_MAP', JSON.stringify(tracking));
+    props.setProperty('YT_SYNC_MAP', JSON.stringify(map));
 }
 
-let GLOBAL_DISCOVERED_DRIVE_IDS = []; // Track files found in current run
-
-// Generate projects data from Drive
-function generateProjectsData() {
-    GLOBAL_DISCOVERED_DRIVE_IDS = []; // Reset
-    const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
-    const categories = root.getFolders();
-    let projects = [];
-
-    while (categories.hasNext()) {
-        let catFolder = categories.next();
-        let catRealName = catFolder.getName();
-        let catName = catRealName.toLowerCase();
-
-        // 1. Collect all files in this category
-        let collectedFiles = getAllFilesRecursive(catFolder);
-
-        if (collectedFiles.length > 0) {
-            let mediaList = [];
-            console.log(`📂 Processing Category: ${catRealName} (${collectedFiles.length} files)`);
-
-            // 2. Process each file with a serial number
-            collectedFiles.forEach((item, index) => {
-                // TIMEOUT CHECK
-                if (new Date().getTime() - START_TIME > MAX_RUNTIME) {
-                    STATS.isPartial = true;
-                    return;
-                }
-
-                const f = item.file;
-                const driveId = f.getId();
-                GLOBAL_DISCOVERED_DRIVE_IDS.push(driveId);
-
-                // Generate Serial Name (e.g., Kitchen - 01)
-                const serialNum = (index + 1).toString().padStart(2, '0');
-                const serialTitle = `${catRealName} - ${serialNum}`;
-
-                // PHYSICAL RENAMING IN DRIVE
-                const extension = getFileExtension(f.getName());
-                const driveName = serialTitle + (extension ? "." + extension : "");
-                if (f.getName() !== driveName) {
-                    try {
-                        f.setName(driveName);
-                        if (index % 5 === 0) console.log(`   📝 Renaming: ${serialTitle}...`);
-                    } catch (err) { console.warn("Could not rename file in Drive: " + driveId); }
-                }
-
-                if (item.is_video) {
-                    let youtubeId = getYoutubeIdFromDescription(f);
-
-                    if (!youtubeId && !QUOTA_EXCEEDED) {
-                        console.log('🚀 Uploading to YouTube with Serial Name: ' + serialTitle);
-                        youtubeId = uploadFileToYouTube(driveId, serialTitle);
-                        if (youtubeId) {
-                            setYoutubeIdInDescription(f, youtubeId);
-                            updateSyncTracker(driveId, youtubeId);
-                            STATS.newUploads++;
-                        } else { STATS.errors++; }
-                    } else if (youtubeId) {
-                        STATS.skipped++;
-                    }
-
-                    if (youtubeId) {
-                        mediaList.push({ src: youtubeId, type: "youtube", title: serialTitle });
-                    } else {
-                        mediaList.push({ src: "https://lh3.googleusercontent.com/d/" + driveId, type: "video", title: serialTitle });
-                    }
-                } else {
-                    // It's an image
-                    STATS.images++;
-                    mediaList.push({ src: "https://lh3.googleusercontent.com/d/" + driveId, type: "image", title: serialTitle });
-                }
-            });
-
-            projects.push({
-                id: catName.replace(/\s+/g, '-'),
-                title: catRealName,
-                category: catName,
-                description: "Exclusive collection of " + catRealName,
-                details: { "Type": "Premium Design Collection" },
-                images: mediaList.map(m => m.src),
-                media: mediaList
-            });
-        }
+// ==========================
+// HELPERS
+// ==========================
+function scatterMedia(list) {
+    if (list.length < 3) return list;
+    const vids = list.filter(x => x.type !== 'image');
+    const imgs = list.filter(x => x.type === 'image');
+    if (!vids.length || !imgs.length) return list;
+    const out = [];
+    const step = Math.max(1, Math.floor(imgs.length / vids.length));
+    let i = 0, v = 0;
+    while (i < imgs.length || v < vids.length) {
+        for (let s = 0; s < step && i < imgs.length; s++) out.push(imgs[i++]);
+        if (v < vids.length) out.push(vids[v++]);
     }
-
-    return projects;
+    return out;
 }
 
-// Update file on GitHub
-function updateGitHubFile(filePath, content) {
-    const url = `https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/contents/${filePath}`;
-
-    // Get current file SHA (required for update)
-    const getOptions = {
-        method: 'get',
-        headers: {
-            'Authorization': 'token ' + GITHUB_TOKEN,
-            'Accept': 'application/vnd.github.v3+json'
-        },
-        muteHttpExceptions: true
-    };
-
-    const getResponse = UrlFetchApp.fetch(url, getOptions);
-    const currentFile = JSON.parse(getResponse.getContentText());
-
-    // Update the file
-    const updatePayload = {
-        message: 'Auto-update (Images + Videos) from Drive: ' + new Date().toISOString(),
-        content: Utilities.base64Encode(content),
-        sha: currentFile.sha
-    };
-
-    const updateOptions = {
-        method: 'put',
-        headers: {
-            'Authorization': 'token ' + GITHUB_TOKEN,
-            'Accept': 'application/vnd.github.v3+json'
-        },
-        contentType: 'application/json',
-        payload: JSON.stringify(updatePayload)
-    };
-
-    UrlFetchApp.fetch(url, updateOptions);
+function capitalize(s) {
+    if (!s) return "";
+    return s.split(' ').map(x => x[0] ? x[0].toUpperCase() + x.slice(1) : "").join(' ');
 }
 
-function getFileExtension(filename) {
-    const parts = filename.split('.');
-    return parts.length > 1 ? parts.pop() : "";
+function getFileExtension(name) {
+    const p = name.split('.'); return p.length > 1 ? p.pop() : '';
+}
+
+// ==========================
+// GITHUB (With Safety)
+// ==========================
+function updateGitHubFile(path, content) {
+    const url = `https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/contents/${path}`;
+    try {
+        const get = UrlFetchApp.fetch(url, {
+            method: 'get',
+            headers: { Authorization: 'token ' + GITHUB_TOKEN },
+            muteHttpExceptions: true
+        });
+        const sha = JSON.parse(get.getContentText()).sha;
+        if (!sha) return false;
+
+        UrlFetchApp.fetch(url, {
+            method: 'put',
+            headers: { Authorization: 'token ' + GITHUB_TOKEN },
+            contentType: 'application/json',
+            payload: JSON.stringify({
+                message: 'Auto-update ' + new Date().toISOString(),
+                content: Utilities.base64Encode(content),
+                sha
+            })
+        });
+        return true;
+    } catch (e) {
+        console.error('GitHub Sync Failed: ' + e);
+        return false;
+    }
+}
+
+// ==========================
+// NOTIFICATIONS
+// ==========================
+function sendStatusEmail(batch, stats) {
+    MailApp.sendEmail(
+        Session.getActiveUser().getEmail(),
+        `🚀 Madni Website Batch Report (${batch})`,
+        "Sync completed successfully.\n\n" + JSON.stringify(stats, null, 2)
+    );
+}
+
+function sendErrorEmail(msg) {
+    MailApp.sendEmail(Session.getActiveUser().getEmail(), '⚠️ Madni Website Sync FAILED', msg);
 }

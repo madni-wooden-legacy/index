@@ -305,7 +305,8 @@ function initProjectDetails() {
             }
 
             // Create a playlist for this section and scatter videos
-            const sectionMedia = scatterMedia(sec.images);
+            // The sync script has already scattered videos into the images list
+            const sectionMedia = sec.media || sec.images;
 
             sectionMedia.forEach((src, mediaIdx) => {
                 const item = document.createElement('div');
@@ -348,12 +349,11 @@ function initProjectDetails() {
         const grid = document.createElement('div');
         grid.className = 'gallery-grid';
 
-        // NORMALIZED PLAYLIST
         let playlist = [];
         if (project.media && project.media.length > 0) {
-            playlist = scatterMedia(project.media);
+            playlist = project.media;
         } else {
-            playlist = scatterMedia(project.images.map(url => ({ src: url, type: isVideo(url) ? 'video' : 'image' })));
+            playlist = project.images.map(url => ({ src: url, type: isVideo(url) ? 'video' : 'image' }));
         }
 
         playlist.forEach((item, index) => {
@@ -425,40 +425,6 @@ function initHomePageFeatured() {
 
 /* ================= UTILS ================= */
 
-function scatterMedia(list) {
-    if (!list || list.length < 3) return list;
-
-    const videos = list.filter(item => {
-        const src = typeof item === 'string' ? item : item.src;
-        const type = typeof item === 'string' ? (isVideo(src) ? 'video' : 'image') : (item.type || (isVideo(src) ? 'video' : 'image'));
-        return type === 'youtube' || type === 'video';
-    });
-    const images = list.filter(item => {
-        const src = typeof item === 'string' ? item : item.src;
-        const type = typeof item === 'string' ? (isVideo(src) ? 'video' : 'image') : (item.type || (isVideo(src) ? 'video' : 'image'));
-        return type !== 'youtube' && type !== 'video';
-    });
-
-    if (videos.length === 0 || images.length === 0) return list;
-
-    const result = [];
-    const step = Math.max(1, Math.floor(images.length / videos.length));
-
-    let vidIdx = 0;
-    let imgIdx = 0;
-
-    while (imgIdx < images.length || vidIdx < videos.length) {
-        // Add images block
-        for (let i = 0; i < step && imgIdx < images.length; i++) {
-            result.push(images[imgIdx++]);
-        }
-        // Add one video
-        if (vidIdx < videos.length) {
-            result.push(videos[vidIdx++]);
-        }
-    }
-    return result;
-}
 
 function convertToVideoUrl(url, autoplay = true) {
     if (!url) return '';
