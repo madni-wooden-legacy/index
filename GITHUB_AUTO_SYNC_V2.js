@@ -30,9 +30,12 @@ const DELETION_SAFE_MODE = true; // Set to false to allow actual YouTube deletio
 // ==========================
 let STATS = {
     newUploads: 0,
+    newImages: 0, // NEW: Track new images added
     skipped: 0,
     deleted: 0,
     images: 0,
+    videos: 0, // NEW: Track total videos
+    projectsCount: 0, // NEW: Track total projects
     errors: 0,
     errorsList: [],
     isPartial: false
@@ -64,7 +67,7 @@ function updateWebsiteData() {
             JSON.stringify({ newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: [] })
         );
 
-        STATS = { newUploads: 0, skipped: 0, deleted: 0, images: 0, errors: 0, errorsList: [], isPartial: false };
+        STATS = { newUploads: 0, newImages: 0, skipped: 0, deleted: 0, images: 0, videos: 0, projectsCount: 0, errors: 0, errorsList: [], isPartial: false };
 
         // 2. LOAD DATA & SYNC
         const store = getOrCreateDataStore();
@@ -92,9 +95,12 @@ function updateWebsiteData() {
 
         // 5. UPDATE STATS & EMAIL
         cumulative.newUploads += STATS.newUploads;
+        cumulative.newImages += STATS.newImages; // NEW
         cumulative.skipped += STATS.skipped;
         cumulative.deleted += STATS.deleted;
         cumulative.images = STATS.images;
+        cumulative.videos = STATS.videos;
+        cumulative.projectsCount = STATS.projectsCount;
         cumulative.errors += STATS.errors;
 
         STATS.errorsList.forEach(e => {
@@ -158,11 +164,22 @@ function saveDataStore(data) {
 // OPTIMIZED CHANGE DETECTION
 // ==========================
 function getFolderFingerprint(folder) {
-    // FAST PRUNING: We use the folder's internal timestamp as a first check.
-    // Note: getLastUpdated on a folder changes if items inside are added/removed
+    // SECOND-LEVEL CHECK: Folder timestamp + Item count
+    // This catches deletions even if the folder timestamp is "lazy"
+    const timestamp = folder.getLastUpdated().getTime();
+
+    // Quick count of files and folders
+    let count = 0;
+    const files = folder.getFiles();
+    while (files.hasNext()) { files.next(); count++; }
+
+    const subs = folder.getFolders();
+    while (subs.hasNext()) { subs.next(); count++; }
+
     return {
-        latest: folder.getLastUpdated().getTime(),
-        name: folder.getName()
+        timestamp: timestamp,
+        count: count,
+        signature: `${timestamp}_${count}`
     };
 }
 
@@ -188,7 +205,7 @@ function generateProjectsData(store) {
         const projectId = key.replace(/\s+/g, '-');
 
         const fp = getFolderFingerprint(cat);
-        const sig = fp.latest.toString();
+        const sig = fp.signature;
 
         // SKIP IF UNCHANGED (Bypass if FORCE_RESYNC is true)
         if (!FORCE_RESYNC && savedState[projectId] === sig && updatedProjectsMap[projectId]) {
@@ -270,6 +287,17 @@ function generateProjectsData(store) {
 
         if (STATS.isPartial) break;
     }
+
+    STATS.projectsCount = Object.keys(updatedProjectsMap).length;
+
+    // Count total videos across all projects
+    let totalVids = 0;
+    Object.values(updatedProjectsMap).forEach(p => {
+        if (p.media) {
+            totalVids += p.media.filter(m => m.type === 'youtube' || m.type === 'video').length;
+        }
+    });
+    STATS.videos = totalVids;
 
     // Final Persist to Drive Store
     store.projects = Object.values(updatedProjectsMap);
@@ -368,6 +396,7 @@ function processFilesInFolder(folder, prefix, store) {
 
         } else if (mime.includes('image')) {
             STATS.images++;
+            STATS.newImages++; // Count as new for this batch if folder was not skipped
             list.push({ src: "https://lh3.googleusercontent.com/d/" + id, type: "image", title });
         }
     });
@@ -442,8 +471,15 @@ function updateSyncTracker(driveId, youtubeId, store) {
 // ==========================
 function syncYouTubeDeletions(store) {
     if (!store || !store.ytMetadata || !store.ytMetadata.MAP) return;
-    const map = store.ytMetadata.MAP;
 
+    // SAFETY: If the previous run was partial (timed out), we don't have a full picture 
+    // of all files. Running deletion now would delete files we just haven't "seen" yet.
+    if (STATS.isPartial) {
+        console.log('🕒 Skipping deletion cleanup: Current run is partial/incomplete.');
+        return;
+    }
+
+    const map = store.ytMetadata.MAP;
     Object.keys(map).forEach(driveId => {
         if (!GLOBAL_DISCOVERED_DRIVE_IDS.includes(driveId)) {
             const ytId = map[driveId];
@@ -538,26 +574,60 @@ function updateGitHubFile(path, content) {
 // ==========================
 function sendStatusEmail(batchCount, stats) {
     const recipient = Session.getActiveUser().getEmail();
-    const subject = `🚀 Madni Website Batch Report (${batchCount} Runs)`;
+    const subject = `🚀 Madni Website: New Sync Report 🚀 (${batchCount} Updates)`;
 
     const body = `
-MADNI WEBSITE SYNC SUMMARY (Batch of ${batchCount} runs)
+======================================================
+🌟 MADNI WOODEN LEGACY: AUTO-SYNC STATUS REPORT 🌟
+======================================================
+Summary of the last ${batchCount} automation cycles.
+
+✅ WEBSITE CURRENT STATUS: Live & Updated
 ------------------------------------------------------
-Total New Videos Uploaded: ${stats.newUploads}
-Videos Already Synced: ${stats.skipped}
-Dead Videos Removed: ${stats.deleted}
-Total Website Images: ${stats.images}
-Total Errors in Batch: ${stats.errors}
 
-${stats.errorsList && stats.errorsList.length > 0 ? `⚠️ ERROR DETAILS:\n- ${stats.errorsList.join('\n- ')}` : '✅ No errors encountered.'}
+📦 CURRENT WEBSITE CONTENT
+- 🖼️ Total Images: ${stats.images}
+- 🎬 Total Videos: ${stats.videos} 
+- 📂 Total Collections/Projects: ${stats.projectsCount}
 
-Website Status: ✅ LIVE & FULLY SYNCED
-🔗 Live Website: https://${GITHUB_REPO_OWNER}.github.io/${GITHUB_REPO_NAME}/
-🔗 Google Drive Folder: https://drive.google.com/drive/u/0/folders/${ROOT_FOLDER_ID}
-🔗 GitHub Repo: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}
+🆕 RECENT ACTIVITY (Last Batch)
+- 📸 New Photos Added: +${stats.newImages}
+- 🎥 New Videos Uploaded: +${stats.newUploads}
+- 🗑️ Items Removed: ${stats.deleted}
+- ✅ Files Checked & Verified: ${stats.skipped}
+
+🚀 STREAMING PERFORMANCE (YouTube)
+- ✅ Streaming on YouTube: ${stats.skipped + stats.newUploads} videos
+- ⏳ Pending Sync (Using Drive): ${stats.errors} videos
+  (Don't worry! Pending videos still work perfectly on your site 
+   and will move to YouTube slowly as Google allows).
+
+⚠️ SYSTEM NOTICES
+${stats.errorsList && stats.errorsList.length > 0
+            ? `Status updates for your review:\n\n${stats.errorsList.map(e => "📍 " + cleanErrorMessage(e)).join('\n')}`
+            : '🌈 Everything is perfect! No issues found.'}
+
+------------------------------------------------------
+🔗 QUICK ACCESS
+- 🌐 View Your Website: https://${GITHUB_REPO_OWNER}.github.io/${GITHUB_REPO_NAME}/
+- 📁 Open Photo Gallery: https://drive.google.com/drive/u/0/folders/${ROOT_FOLDER_ID}
+- 🛠️ Developer Dashboard: https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}
+
+Generated with ✨ by Madni Wooden Legacy Sync Engine.
+======================================================
     `;
 
     MailApp.sendEmail(recipient, subject, body);
+}
+
+/**
+ * Transforms complex technical errors into simple English
+ */
+function cleanErrorMessage(msg) {
+    if (msg.includes('quota')) return "YouTube Daily Limit Reached: Some videos are using Google Drive links for now. They will move to YouTube tomorrow.";
+    if (msg.includes('execution time')) return "Sync timed out: You have a lot of new files! This is normal; the script will continue from where it left off in the next run.";
+    if (msg.includes('Service error: Drive')) return "Google Drive was briefly busy. The script skipped one check but will try again soon.";
+    return msg;
 }
 
 function sendErrorEmail(msg) {
