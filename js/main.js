@@ -186,9 +186,9 @@ function renderProjects(items) {
                 <div class="video-gradient-overlay"></div>
             </div>`;
         } else if (mediaItem.type === 'video') {
-            const videoId = getDriveId(mediaItem.src);
+            const videoUrl = mediaItem.src.includes('preview') ? mediaItem.src : `https://drive.google.com/file/d/${getDriveId(mediaItem.src)}/preview`;
             mediaHtml = `<div class="video-container" style="position:relative; width:100%; height:100%; background:#111; overflow:hidden;">
-                <iframe src="https://drive.google.com/file/d/${videoId}/preview" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
             </div>`;
         } else {
             mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'">`;
@@ -367,20 +367,19 @@ function initProjectDetails() {
             el.className = 'gallery-item';
 
             let content = '';
-            if (item.type === 'youtube') {
-                const ytId = item.src;
+            if (itemType === 'youtube') {
+                const ytId = itemSrc;
                 content = `<div class="video-container" style="position:relative; width:100%; aspect-ratio:9/16; background:#111; overflow:hidden;">
-                    <iframe src="${convertToVideoUrl(ytId, true)}" style="position:absolute; top:-10%; left:0; width:100%; height:120%; border:none; pointer-events:none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" frameborder="0"></iframe>
-                    <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
-                    <div class="video-gradient-overlay"></div>
-                </div>`;
-            } else if (item.type === 'video') {
-                const videoId = getDriveId(item.src);
-                const streamUrl = `https://drive.google.com/uc?id=${videoId}&export=download`;
+                        <iframe src="${convertToVideoUrl(ytId, true)}" style="position:absolute; top:-10%; left:0; width:100%; height:120%; border:none; pointer-events:none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" frameborder="0"></iframe>
+                        <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
+                        <div class="video-gradient-overlay"></div>
+                    </div>`;
+            } else if (itemType === 'video') {
+                const videoUrl = itemSrc.includes('preview') ? itemSrc : `https://drive.google.com/file/d/${getDriveId(itemSrc)}/preview`;
                 content = `<div class="video-container" style="position:relative; width:100%; aspect-ratio:9/16; background:#111; overflow:hidden;">
-                    <video src="${streamUrl}" autoplay muted loop playsinline style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; pointer-events:none;"></video>
-                    <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
-                </div>`;
+                        <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+                        <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
+                    </div>`;
             } else {
                 content = `<img src="${item.src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox(${index}, 'p-gallery')">`;
             }
@@ -458,7 +457,7 @@ function convertToVideoUrl(url, autoplay = true) {
     }
     const id = getDriveId(url);
     if (id) {
-        return `https://drive.google.com/uc?id=${id}&export=download`;
+        return `https://drive.google.com/file/d/${id}/preview`;
     }
     return url;
 }

@@ -366,32 +366,32 @@ function processFilesInFolder(folder, prefix, store) {
         if (isVideo) {
             let yt = getYoutubeIdFromDescription(f);
 
-            // QUOTA SHORT-CIRCUIT: Skip YouTube logic if quota is hit
-            if (QUOTA_EXCEEDED) {
-                // FALLBACK: Use Drive view link instead of direct link for better stability on larger files
-                list.push({ src: "https://drive.google.com/file/d/" + id + "/view", type: "video", title });
-                return;
-            }
-
-            if (!yt) {
-                console.log('🚀 Uploading to YouTube: ' + title);
-                yt = uploadFileToYouTube(id, title);
-                if (yt) {
-                    setYoutubeIdInDescription(f, yt);
+            // 1. Process YouTube logic ONLY IF quota is not hit OR we already have a YT ID
+            if (!QUOTA_EXCEEDED || yt) {
+                if (!yt) {
+                    console.log('🚀 Uploading to YouTube: ' + title);
+                    yt = uploadFileToYouTube(id, title);
+                    if (yt) {
+                        setYoutubeIdInDescription(f, yt);
+                        updateSyncTracker(id, yt, store);
+                        STATS.newUploads++;
+                    } else STATS.errors++;
+                } else {
+                    // Only refresh metadata if quota allows, otherwise just use what we have
+                    if (!QUOTA_EXCEEDED) {
+                        refreshYouTubeMetadata(yt, title, store);
+                    }
                     updateSyncTracker(id, yt, store);
-                    STATS.newUploads++;
-                } else STATS.errors++;
-            } else {
-                refreshYouTubeMetadata(yt, title, store);
-                updateSyncTracker(id, yt, store); // RE-LEARN into memory
-                STATS.skipped++;
+                    STATS.skipped++;
+                }
             }
 
+            // 2. Final Selection: Priority to YouTube ID, then Drive Fallback
             if (yt) {
                 list.push({ src: yt, type: "youtube", title });
             } else {
-                // Use standard Drive URL that getDriveId can parse
-                list.push({ src: "https://drive.google.com/file/d/" + id + "/view", type: "video", title });
+                // FALLBACK: Use Drive preview which is more reliable for iframes
+                list.push({ src: "https://drive.google.com/file/d/" + id + "/preview", type: "video", title });
             }
 
         } else if (mime.includes('image')) {
