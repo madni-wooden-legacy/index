@@ -236,6 +236,7 @@ function generateProjectsData(store) {
         }
 
         console.log(`📂 [SYNC START] Category: ${name} (ID: ${cat.getId()})`);
+
         CATEGORY_COMPLETED_SUCCESSFULLY = true; // Reset for atomic tracking
 
         let sections = [];
@@ -299,9 +300,19 @@ function generateProjectsData(store) {
             } else {
                 console.warn('🕒 Sync state saved (Partial) for: ' + name + '. Will continue in next run.');
             }
+            if (STATS.isPartial) break;
         }
+    }
 
-        if (STATS.isPartial) break;
+    // MERGE SAFETY: If we timed out (isPartial), we must ensure we don't LOSE the projects we didn't get to scan yet.
+    // We iterate through the OLD projects list and add any that are missing from our new map.
+    if (STATS.isPartial) {
+        console.warn('⚠️ Partial Sync detected through time-out. Merging existing projects to prevent data loss...');
+        currentProjects.forEach(p => {
+            if (!updatedProjectsMap[p.id]) {
+                updatedProjectsMap[p.id] = p;
+            }
+        });
     }
 
     STATS.projectsCount = Object.keys(updatedProjectsMap).length;
@@ -316,7 +327,10 @@ function generateProjectsData(store) {
     STATS.videos = totalVids;
 
     // Final Persist to Drive Store
-    store.projects = Object.values(updatedProjectsMap);
+    // Sort projects alphabetically by category name to keep the JSON clean
+    const finalProjects = Object.values(updatedProjectsMap).sort((a, b) => a.title.localeCompare(b.title));
+
+    store.projects = finalProjects;
     store.categoryState = savedState;
 
     // If we finished EVERYTHING (not partial), clear the Force Sync memory so next time we can start fresh
@@ -335,6 +349,19 @@ function collectIdsRecursive(folder) {
     const subs = folder.getFolders();
     while (subs.hasNext()) collectIdsRecursive(subs.next());
 }
+
+/**
+ * Generate a simple UUID for temporary file naming
+ * Used in two-pass rename to avoid naming conflicts
+ */
+function generateSimpleUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 
 // ==========================
 // FILE PROCESSING (With YT Re-sync)
@@ -359,8 +386,52 @@ function processFilesInFolder(folder, prefix, store) {
         }
     } catch (e) { /* Old Drive API version support */ }
 
+    // CRITICAL: Deduplicate files by ID (shortcuts + regular files can point to same file)
+    const seenIds = new Set();
+    files = files.filter(f => {
+        const id = f.getId();
+        if (seenIds.has(id)) return false;
+        seenIds.add(id);
+        return true;
+    });
+
     files.sort((a, b) => a.getName().localeCompare(b.getName()));
 
+    // CRITICAL: Deduplicate by filename REMOVED
+    // We now use Two-Pass Rename (UUIDs) so duplicates are handled automatically
+    // preventing data loss for files with same names but different content
+
+
+    // PASS 1: Rename all files to temporary UUID names to avoid conflicts
+    if (!STATS.isPartial) {
+        console.log(`🔄 [PASS 1/2] Renaming ${files.length} files to temporary names...`);
+        let tempRenameCount = 0;
+
+        files.forEach((f, i) => {
+            if (Date.now() - START_TIME > MAX_RUNTIME) {
+                STATS.isPartial = true;
+                return;
+            }
+
+            const name = f.getName();
+            // SKIP if already a temp file (from previous interrupted run)
+            if (name.startsWith('TEMP_')) return;
+
+            const ext = getFileExtension(name);
+            const tempName = `TEMP_${generateSimpleUUID()}${ext ? '.' + ext : ''}`;
+
+            try {
+                f.setName(tempName);
+                tempRenameCount++;
+            } catch (e) {
+                console.warn(`⚠️ Pass 1 rename failed for ${name}: ${e.message}`);
+            }
+        });
+
+        console.log(`✅ Pass 1 complete: ${tempRenameCount}/${files.length} files renamed to temp names`);
+    }
+
+    // PASS 2: Now rename temp files to final sequential names (conflict-free)
     files.forEach((f, i) => {
         if (Date.now() - START_TIME > MAX_RUNTIME) {
             STATS.isPartial = true;
@@ -372,12 +443,18 @@ function processFilesInFolder(folder, prefix, store) {
 
         const serial = String(i + 1).padStart(2, '0');
         const title = `${prefix} - ${serial}`;
-        const name = f.getName();
+        const name = f.getName(); // Refresh name as it might have changed in Pass 1
         const ext = getFileExtension(name);
         const targetName = title + (ext ? '.' + ext : '');
 
-        if (name !== targetName) {
-            try { f.setName(targetName); } catch (_) { }
+        // Only rename if needed (and not during partial sync)
+        if (!STATS.isPartial && name !== targetName) {
+            try {
+                f.setName(targetName);
+                console.log(`✏️ Renamed: ${name} → ${targetName}`);
+            } catch (e) {
+                console.warn(`⚠️ Pass 2 rename failed for ${name}: ${e.message}`);
+            }
         }
 
         const mime = f.getMimeType();
@@ -399,10 +476,11 @@ function processFilesInFolder(folder, prefix, store) {
                         STATS.newUploads++;
                     } else STATS.errors++;
                 } else {
+                    // QUOTA OPTIMIZATION: Skip metadata refresh to save quota for new uploads
                     // Only refresh metadata if quota allows, otherwise just use what we have
-                    if (!QUOTA_EXCEEDED) {
-                        refreshYouTubeMetadata(yt, title, store);
-                    }
+                    // if (!QUOTA_EXCEEDED) {
+                    //     refreshYouTubeMetadata(yt, title, store);
+                    // }
                     updateSyncTracker(id, yt, store);
                     STATS.skipped++;
                 }
@@ -432,6 +510,12 @@ function processFilesInFolder(folder, prefix, store) {
 // YOUTUBE (With Sync Logic)
 // ==========================
 function uploadFileToYouTube(fileId, title) {
+    // CRITICAL: Don't even try if quota is exceeded
+    if (QUOTA_EXCEEDED) {
+        console.log(`⏭️ Skipping upload for ${title} (quota exceeded)`);
+        return null;
+    }
+
     try {
         const file = DriveApp.getFileById(fileId);
         const blob = file.getBlob();
@@ -442,17 +526,27 @@ function uploadFileToYouTube(fileId, title) {
             status: { privacyStatus: 'unlisted' }
         };
         const video = YouTube.Videos.insert(resource, 'snippet,status', blob);
+        console.log(`✅ Successfully uploaded: ${title} → ${video.id}`);
         return video.id;
     } catch (e) {
         const msg = e.toString();
         console.error('❌ YT Upload Failed: ' + msg);
         STATS.errorsList.push(msg);
-        if (msg.includes('quota')) QUOTA_EXCEEDED = true;
+        if (msg.includes('quota')) {
+            QUOTA_EXCEEDED = true;
+            console.warn('🚨 YouTube quota exceeded! No more uploads will be attempted this run.');
+        }
         return null;
     }
 }
 
 function refreshYouTubeMetadata(videoId, expectedTitle, store) {
+    // CRITICAL: Exit immediately if quota is exceeded to save API calls
+    if (QUOTA_EXCEEDED) {
+        console.log(`⏭️ Skipping metadata refresh for ${videoId} (quota exceeded)`);
+        return;
+    }
+
     if (!store.ytMetadata) store.ytMetadata = {};
     const lastTitle = store.ytMetadata['TITLE_' + videoId];
 
@@ -466,7 +560,12 @@ function refreshYouTubeMetadata(videoId, expectedTitle, store) {
             store.ytMetadata['TITLE_' + videoId] = expectedTitle;
             console.log('🔄 YouTube metadata refreshed for: ' + videoId);
         } catch (e) {
-            console.warn(`Metadata refresh failed for ${videoId}: ${e}`);
+            const msg = e.toString();
+            console.warn(`Metadata refresh failed for ${videoId}: ${msg}`);
+            if (msg.includes('quota')) {
+                QUOTA_EXCEEDED = true;
+                console.warn('🚨 YouTube quota exceeded! All further metadata updates and uploads will be skipped.');
+            }
         }
     }
 }
