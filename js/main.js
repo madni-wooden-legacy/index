@@ -655,7 +655,7 @@ function createSmartVideo(mediaItem, index = null, isGallery = false) {
                  onerror="this.src='https://via.placeholder.com/640x360/000000/FFFFFF?text=Video'">
             <div class="video-gradient-overlay"></div>
             ${triggerHtml}
-            <div class="loading-spinner" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#fff; font-size:20px; opacity:0; pointer-events:none;">
+            <div class="loading-spinner" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#fff; font-size:20px; opacity:0; pointer-events:none; transition: opacity 0.3s;">
                 <i class="fas fa-circle-notch fa-spin"></i>
             </div>
         </div>
@@ -680,7 +680,7 @@ function initSmartVideoObserver() {
                 }
             }
         });
-    }, { rootMargin: '200px 0px', threshold: 0.05 });
+    }, { rootMargin: '200px 0px', threshold: 0.03 });
 
     document.querySelectorAll('.smart-video-container').forEach(el => smartObserver.observe(el));
 }
