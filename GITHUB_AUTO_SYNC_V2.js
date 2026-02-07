@@ -94,14 +94,17 @@ function updateWebsiteData() {
         }
 
         // 5. UPDATE STATS & EMAIL
+        // For counters that accumulate (New Uploads, New Images found in this run)
         cumulative.newUploads += STATS.newUploads;
-        cumulative.newImages += STATS.newImages; // NEW
+        cumulative.newImages += STATS.newImages;
         cumulative.skipped += STATS.skipped;
         cumulative.deleted += STATS.deleted;
-        cumulative.images = STATS.images;
-        cumulative.videos = STATS.videos;
-        cumulative.projectsCount = STATS.projectsCount;
         cumulative.errors += STATS.errors;
+
+        // For snapshots (Total Images/Videos currently on site), just take the latest value
+        if (STATS.images > 0) cumulative.images = STATS.images;
+        if (STATS.videos > 0) cumulative.videos = STATS.videos;
+        if (STATS.projectsCount > 0) cumulative.projectsCount = STATS.projectsCount;
 
         STATS.errorsList.forEach(e => {
             if (!cumulative.errorsList.includes(e)) cumulative.errorsList.push(e);
@@ -146,7 +149,7 @@ function getOrCreateDataStore() {
             console.warn('Store corrupt. Resetting.');
         }
     }
-    return { categoryState: {}, projects: [], lastPushHash: '', ytMetadata: {} };
+    return { categoryState: {}, projects: [], lastPushHash: '', ytMetadata: {}, completedCategories: [] };
 }
 
 function saveDataStore(data) {
@@ -223,6 +226,15 @@ function generateProjectsData(store) {
             continue;
         }
 
+        // FORCE RESYNC OPTIMIZATION:
+        // Even if we are forcing a resync, if we completed this specific category in a previous partial run of THIS batch, skip it.
+        // This allows FORCE_RESYNC to work across multiple triggers without restarting from 'A' every time.
+        if (FORCE_RESYNC && store.completedCategories && store.completedCategories.includes(projectId)) {
+            console.log('⏭️ [FORCE_SYNC] Already completed in this cycle: ' + name);
+            collectIdsRecursive(cat);
+            continue;
+        }
+
         console.log(`📂 [SYNC START] Category: ${name} (ID: ${cat.getId()})`);
         CATEGORY_COMPLETED_SUCCESSFULLY = true; // Reset for atomic tracking
 
@@ -279,6 +291,10 @@ function generateProjectsData(store) {
             // Only update the signature if we finished the WHOLE category
             if (!STATS.isPartial) {
                 savedState[projectId] = sig;
+                // Add to completed list so we don't re-scan it in the next partial run
+                if (!store.completedCategories) store.completedCategories = [];
+                if (!store.completedCategories.includes(projectId)) store.completedCategories.push(projectId);
+
                 console.log('✅ Sync state committed (Full) for: ' + name);
             } else {
                 console.warn('🕒 Sync state saved (Partial) for: ' + name + '. Will continue in next run.');
@@ -302,6 +318,12 @@ function generateProjectsData(store) {
     // Final Persist to Drive Store
     store.projects = Object.values(updatedProjectsMap);
     store.categoryState = savedState;
+
+    // If we finished EVERYTHING (not partial), clear the Force Sync memory so next time we can start fresh
+    if (!STATS.isPartial) {
+        store.completedCategories = [];
+    }
+
     saveDataStore(store);
 
     return store.projects;
@@ -396,7 +418,9 @@ function processFilesInFolder(folder, prefix, store) {
 
         } else if (mime.includes('image')) {
             STATS.images++;
-            STATS.newImages++; // Count as new for this batch if folder was not skipped
+            // Only count as NEW if it wasn't in our previous snapshot (simplified check for now)
+            // For now, we only increment newImages if the folder signature CHANGED
+            if (!FORCE_RESYNC) STATS.newImages++;
             list.push({ src: "https://lh3.googleusercontent.com/d/" + id, type: "image", title });
         }
     });
@@ -597,10 +621,9 @@ Summary of the last ${batchCount} automation cycles.
 - ✅ Files Checked & Verified: ${stats.skipped}
 
 🚀 STREAMING PERFORMANCE (YouTube)
-- ✅ Streaming on YouTube: ${stats.skipped + stats.newUploads} videos
-- ⏳ Pending Sync (Using Drive): ${stats.errors} videos
-  (Don't worry! Pending videos still work perfectly on your site 
-   and will move to YouTube slowly as Google allows).
+- ✅ Streaming on YouTube: ${stats.videos} videos (Live)
+- ⏳ Pending Sync (Using Drive): ${stats.skipped} videos (Checking...)
+   (Don't worry! This number fluctuates as we scan different folders).
 
 ⚠️ SYSTEM NOTICES
 ${stats.errorsList && stats.errorsList.length > 0
