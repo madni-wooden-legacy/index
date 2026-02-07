@@ -178,18 +178,9 @@ function renderProjects(items) {
             mediaItem = { src: project.images[0], type: 'image' };
         }
 
-        let mediaHtml = '';
-        if (mediaItem.type === 'youtube') {
-            const ytId = mediaItem.src;
-            mediaHtml = `<div class="video-container" style="position:relative; width:100%; height:100%; background:#111; overflow:hidden;">
-                <iframe src="${convertToVideoUrl(ytId, true)}" style="position:absolute; top:-10%; left:0; width:100%; height:120%; border:none; pointer-events:none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" frameborder="0"></iframe>
-                <div class="video-gradient-overlay"></div>
-            </div>`;
-        } else if (mediaItem.type === 'video') {
-            const videoUrl = mediaItem.src.includes('preview') ? mediaItem.src : `https://drive.google.com/file/d/${getDriveId(mediaItem.src)}/preview`;
-            mediaHtml = `<div class="video-container" style="position:relative; width:100%; height:100%; background:#111; overflow:hidden;">
-                <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
-            </div>`;
+        let mediaHtml;
+        if (mediaItem.type === 'youtube' || mediaItem.type === 'video') {
+            mediaHtml = createSmartVideo(mediaItem, null, false);
         } else {
             mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'">`;
         }
@@ -207,6 +198,9 @@ function renderProjects(items) {
         `;
         grid.appendChild(card);
     });
+
+    // Initialize Smart Play Observer
+    setTimeout(initSmartVideoObserver, 100);
 }
 
 /* ================= PROJECT DETAILS PAGE LOGIC ================= */
@@ -321,20 +315,8 @@ function initProjectDetails() {
                 let itemType = typeof src === 'string' ? (isVideo(src) ? 'video' : 'image') : (src.type || 'image');
 
                 let content = '';
-                if (itemType === 'youtube') {
-                    const ytId = itemSrc;
-                    content = `<div class="video-container" style="position:relative; width:100%; aspect-ratio:9/16; background:#111; overflow:hidden;">
-                        <iframe src="${convertToVideoUrl(ytId, true)}" style="position:absolute; top:-10%; left:0; width:100%; height:120%; border:none; pointer-events:none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" frameborder="0"></iframe>
-                        <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${mediaIdx}, 'sec-${idx}')"></div>
-                        <div class="video-gradient-overlay"></div>
-                    </div>`;
-                } else if (itemType === 'video') {
-                    const videoId = getDriveId(itemSrc);
-                    const streamUrl = `https://drive.google.com/uc?id=${videoId}&export=download`;
-                    content = `<div class="video-container" style="position:relative; width:100%; aspect-ratio:9/16; background:#111; overflow:hidden;">
-                        <video src="${streamUrl}" autoplay muted loop playsinline style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; pointer-events:none;"></video>
-                        <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${mediaIdx}, 'sec-${idx}')"></div>
-                    </div>`;
+                if (itemType === 'youtube' || itemType === 'video') {
+                    content = createSmartVideo({ src: itemSrc, type: itemType }, mediaIdx, true);
                 } else {
                     content = `<img src="${itemSrc}" alt="${sec.title}" loading="lazy" onclick="openLightbox(${mediaIdx}, 'sec-${idx}')" onerror="this.parentElement.style.display='none'">`;
                 }
@@ -367,19 +349,8 @@ function initProjectDetails() {
             el.className = 'gallery-item';
 
             let content = '';
-            if (itemType === 'youtube') {
-                const ytId = itemSrc;
-                content = `<div class="video-container" style="position:relative; width:100%; aspect-ratio:9/16; background:#111; overflow:hidden;">
-                        <iframe src="${convertToVideoUrl(ytId, true)}" style="position:absolute; top:-10%; left:0; width:100%; height:120%; border:none; pointer-events:none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" frameborder="0"></iframe>
-                        <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
-                        <div class="video-gradient-overlay"></div>
-                    </div>`;
-            } else if (itemType === 'video') {
-                const videoUrl = itemSrc.includes('preview') ? itemSrc : `https://drive.google.com/file/d/${getDriveId(itemSrc)}/preview`;
-                content = `<div class="video-container" style="position:relative; width:100%; aspect-ratio:9/16; background:#111; overflow:hidden;">
-                        <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
-                        <div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>
-                    </div>`;
+            if (itemType === 'youtube' || itemType === 'video') {
+                content = createSmartVideo({ src: itemSrc, type: itemType }, index, true);
             } else {
                 content = `<img src="${item.src}" alt="${project.title} View ${index + 1}" loading="lazy" onclick="openLightbox(${index}, 'p-gallery')">`;
             }
@@ -395,8 +366,10 @@ function initProjectDetails() {
     }
 
     // Update Inquiry Button
-    const waMsg = `Hi, I am interested in the design: ${project.title}. Can you provide a quote?`;
     document.getElementById('wa-inquiry').href = `https://wa.me/923004339143?text=${encodeURIComponent(waMsg)}`;
+
+    // Initialize Smart Play for Gallery
+    setTimeout(initSmartVideoObserver, 100);
 }
 
 /* ================= HOME PAGE LOGIC ================= */
@@ -649,4 +622,114 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
+}
+
+/* ================= UNIVERSAL SMART PLAY ================= */
+
+function createSmartVideo(mediaItem, index = null, isGallery = false) {
+    let videoId, thumbUrl, videoUrl;
+
+    if (mediaItem.type === 'youtube') {
+        videoId = mediaItem.src;
+        thumbUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        videoUrl = convertToVideoUrl(videoId, true);
+    } else {
+        videoId = getDriveId(mediaItem.src);
+        thumbUrl = `https://lh3.googleusercontent.com/d/${videoId}=w640-h480-k`;
+        videoUrl = mediaItem.src.includes('preview') ? mediaItem.src : `https://drive.google.com/file/d/${videoId}/preview`;
+    }
+
+    const ratioStyle = isGallery ? 'aspect-ratio:9/16;' : '';
+
+    const triggerHtml = isGallery && index !== null
+        ? `<div class="media-trigger" style="position:absolute; inset:0; z-index:100; cursor:pointer;" onclick="openLightbox(${index}, 'p-gallery')"></div>`
+        : '';
+
+    return `
+        <div class="smart-video-container" 
+             style="position:relative; width:100%; height:100%; background:#000; overflow:hidden; ${ratioStyle}" 
+             data-video-url="${videoUrl}" 
+             data-video-type="${mediaItem.type}">
+            <img src="${thumbUrl}" class="smart-video-thumb" loading="lazy" 
+                 style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition: opacity 0.5s ease; opacity:1;" 
+                 onerror="this.src='https://via.placeholder.com/640x360/000000/FFFFFF?text=Video'">
+            <div class="video-gradient-overlay"></div>
+            ${triggerHtml}
+            <div class="loading-spinner" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#fff; font-size:20px; opacity:0; pointer-events:none;">
+                <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+        </div>
+    `;
+}
+
+let smartObserver;
+
+function initSmartVideoObserver() {
+    if (smartObserver) smartObserver.disconnect();
+
+    smartObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const container = entry.target;
+            if (entry.isIntersecting) {
+                if (!container.classList.contains('loaded')) {
+                    loadSmartVideo(container);
+                }
+            } else {
+                if (container.classList.contains('loaded')) {
+                    unloadSmartVideo(container);
+                }
+            }
+        });
+    }, { rootMargin: '200px 0px', threshold: 0.05 });
+
+    document.querySelectorAll('.smart-video-container').forEach(el => smartObserver.observe(el));
+}
+
+function loadSmartVideo(container) {
+    if (container.querySelector('iframe')) return;
+
+    const url = container.dataset.videoUrl;
+    const type = container.dataset.videoType;
+    const thumb = container.querySelector('.smart-video-thumb');
+
+    const spinner = container.querySelector('.loading-spinner');
+    if (spinner) spinner.style.opacity = '1';
+
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; border:none; opacity:0; transition: opacity 0.4s ease;";
+    iframe.allow = "autoplay; fullscreen; encrypted-media; picture-in-picture";
+    iframe.setAttribute('frameborder', '0');
+
+    if (type === 'youtube') {
+        iframe.style.top = '-10%';
+        iframe.style.height = '120%';
+    }
+
+    iframe.onload = () => {
+        iframe.style.opacity = '1';
+        if (thumb) thumb.style.opacity = '0';
+        if (spinner) spinner.style.opacity = '0';
+        container.classList.add('loaded');
+    };
+
+    container.prepend(iframe);
+
+    setTimeout(() => {
+        iframe.style.opacity = '1';
+        if (thumb) thumb.style.opacity = '0';
+    }, 2000);
+}
+
+function unloadSmartVideo(container) {
+    const iframe = container.querySelector('iframe');
+    const thumb = container.querySelector('.smart-video-thumb');
+    const spinner = container.querySelector('.loading-spinner');
+
+    if (iframe) {
+        iframe.remove();
+        container.classList.remove('loaded');
+        if (thumb) thumb.style.opacity = '1';
+        if (spinner) spinner.style.opacity = '0';
+    }
 }
