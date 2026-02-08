@@ -205,7 +205,8 @@ function generateProjectsData(store) {
         const cat = categories.next();
         const name = cat.getName();
         const key = name.toLowerCase();
-        const projectId = key.replace(/\s+/g, '-');
+        // FIX: Sanitize ID to be URL-safe (remove &, replace spaces with -)
+        const projectId = key.replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
         const fp = getFolderFingerprint(cat);
         const sig = fp.signature;
