@@ -260,6 +260,64 @@ let projects = [
     ]
   },
   {
+    "id": "chair-and-table",
+    "title": "Chair & Table",
+    "category": "chair & table",
+    "description": "Exclusive collection of Chair & Table",
+    "details": {
+      "Type": "Premium Portfolio"
+    },
+    "sections": [
+      {
+        "title": "Gallery",
+        "images": [
+          "https://lh3.googleusercontent.com/d/13OvWzBssWaH7CupRZM_W7qb2epbG5IIX",
+          "https://lh3.googleusercontent.com/d/1TWml0cRlvMKsyV6Ouj2eX58rss-MO0lx",
+          "https://lh3.googleusercontent.com/d/1KeBgswy5iEXagsDOt0FZDuvpYLn8lbiX"
+        ],
+        "media": [
+          {
+            "src": "https://lh3.googleusercontent.com/d/13OvWzBssWaH7CupRZM_W7qb2epbG5IIX",
+            "type": "image",
+            "title": "Chair & Table - 01"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1TWml0cRlvMKsyV6Ouj2eX58rss-MO0lx",
+            "type": "image",
+            "title": "Chair & Table - 02"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1KeBgswy5iEXagsDOt0FZDuvpYLn8lbiX",
+            "type": "image",
+            "title": "Chair & Table - 03"
+          }
+        ]
+      }
+    ],
+    "images": [
+      "https://lh3.googleusercontent.com/d/13OvWzBssWaH7CupRZM_W7qb2epbG5IIX",
+      "https://lh3.googleusercontent.com/d/1TWml0cRlvMKsyV6Ouj2eX58rss-MO0lx",
+      "https://lh3.googleusercontent.com/d/1KeBgswy5iEXagsDOt0FZDuvpYLn8lbiX"
+    ],
+    "media": [
+      {
+        "src": "https://lh3.googleusercontent.com/d/13OvWzBssWaH7CupRZM_W7qb2epbG5IIX",
+        "type": "image",
+        "title": "Chair & Table - 01"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1TWml0cRlvMKsyV6Ouj2eX58rss-MO0lx",
+        "type": "image",
+        "title": "Chair & Table - 02"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1KeBgswy5iEXagsDOt0FZDuvpYLn8lbiX",
+        "type": "image",
+        "title": "Chair & Table - 03"
+      }
+    ]
+  },
+  {
     "id": "cloth-cabinet",
     "title": "Cloth Cabinet",
     "category": "cloth cabinet",
