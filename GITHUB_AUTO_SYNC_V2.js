@@ -327,6 +327,14 @@ function generateProjectsData(store) {
     });
     STATS.videos = totalVids;
 
+    // CLEANUP: Remove any projects with invalid IDs (containing '&') caused by old naming logic
+    Object.keys(updatedProjectsMap).forEach(key => {
+        if (key.includes('&')) {
+            console.warn(`🗑️ Removing legacy project ID: ${key} (replaced by sanitized version)`);
+            delete updatedProjectsMap[key];
+        }
+    });
+
     // Final Persist to Drive Store
     // Sort projects alphabetically by category name to keep the JSON clean
     const finalProjects = Object.values(updatedProjectsMap).sort((a, b) => a.title.localeCompare(b.title));
