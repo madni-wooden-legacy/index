@@ -1753,3 +1753,400 @@ textarea+.input-icon {
         font-size: 24px;
     }
 }
+
+
+
+
+/* ================= COLLECTIONS PAGE STYLES ================= */
+
+/* Collections Hero */
+.collections-hero {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-forest-green) 100%);
+    padding: 120px 0 80px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.collections-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></svg>');
+    background-size: 150px;
+    animation: floatPattern 30s linear infinite;
+}
+
+.collections-hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: var(--color-secondary);
+}
+
+.collections-badge {
+    display: inline-block;
+    background: rgba(212, 165, 116, 0.15);
+    border: 1px solid var(--color-accent);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    color: var(--color-accent);
+}
+
+.collections-hero-content h2 {
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+    color: var(--color-secondary);
+}
+
+.collections-hero-content p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+    color: var(--color-secondary);
+}
+
+/* Filters Wrapper */
+.filters-wrapper {
+    background: white;
+    padding: 25px 0;
+    position: sticky;
+    top: 70px;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+.filters-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Filter Buttons */
+.filter-btn {
+    background: transparent;
+    border: 1.5px solid var(--color-accent);
+    padding: 10px 25px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: var(--color-accent);
+    transition: width 0.3s ease;
+    z-index: -1;
+}
+
+.filter-btn:hover::before,
+.filter-btn.active::before {
+    width: 100%;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    color: #2C2416;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(212, 165, 116, 0.3);
+}
+
+/* Collections Grid - Masonry Style */
+.collections-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    padding-bottom: 60px;
+}
+
+/* Project Card - Premium Design */
+.project-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    cursor: pointer;
+}
+
+.project-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(26, 58, 46, 0.2);
+}
+
+/* Card Image Container */
+.card-img-container {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+}
+
+.card-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.project-card:hover .card-img-container img {
+    transform: scale(1.1);
+}
+
+/* Card Overlay */
+.project-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(26, 58, 46, 0.9), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.project-card:hover::after {
+    opacity: 1;
+}
+
+/* Card Info */
+.card-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    z-index: 2;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.4s ease;
+}
+
+.project-card:hover .card-info {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.card-info span {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-accent);
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.card-info h3 {
+    font-size: 1.3rem;
+    color: white;
+    margin: 0;
+    font-weight: 600;
+}
+
+.card-info h3 a {
+    color: white;
+}
+
+/* View Icon on Hover */
+.project-card::before {
+    content: '\f065';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2C2416;
+    font-size: 16px;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s ease;
+    z-index: 3;
+}
+
+.project-card:hover::before {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-light);
+}
+
+.empty-state i {
+    font-size: 50px;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.empty-state h4 {
+    font-size: 1.5rem;
+    color: var(--color-text);
+    margin-bottom: 10px;
+}
+
+/* Collections CTA */
+.collections-cta {
+    background: var(--color-secondary);
+    padding: 80px 0;
+    text-align: center;
+    border-top: 1px solid rgba(26, 58, 46, 0.1);
+}
+
+.cta-content h3 {
+    font-size: 2rem;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+}
+
+.cta-content p {
+    color: var(--color-text-light);
+    margin-bottom: 25px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ================= RESPONSIVE - MOBILE FRIENDLY ================= */
+
+@media (max-width: 1024px) {
+    .collections-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .collections-hero-content h2 {
+        font-size: 2.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* Hero Adjustments */
+    .collections-hero {
+        padding: 100px 0 60px;
+    }
+
+    .collections-hero-content h2 {
+        font-size: 2.2rem;
+    }
+
+    .collections-hero-content p {
+        font-size: 1rem;
+        padding: 0 20px;
+    }
+
+    /* Filters - Scrollable on Mobile */
+    .filters-wrapper {
+        padding: 15px 0;
+        top: 60px;
+    }
+
+    .filters-container {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0 20px;
+        gap: 10px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .filters-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-btn {
+        flex-shrink: 0;
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+
+    /* Grid - Single Column */
+    .collections-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0 15px 40px;
+    }
+
+    /* Card - Mobile Optimized */
+    .card-img-container {
+        height: 250px;
+    }
+
+    /* Show Info Always on Mobile (No Hover) */
+    .project-card::after {
+        opacity: 1;
+        height: 40%;
+    }
+
+    .card-info {
+        transform: translateY(0);
+        opacity: 1;
+        padding: 15px;
+    }
+
+    .card-info h3 {
+        font-size: 1.1rem;
+    }
+
+    /* Hide View Icon on Mobile */
+    .project-card::before {
+        display: none;
+    }
+
+    /* CTA */
+    .collections-cta {
+        padding: 50px 20px;
+    }
+
+    .cta-content h3 {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .collections-hero-content h2 {
+        font-size: 1.8rem;
+    }
+
+    .card-img-container {
+        height: 220px;
+    }
+
+    .collections-badge {
+        font-size: 10px;
+        padding: 5px 12px;
+    }
+}

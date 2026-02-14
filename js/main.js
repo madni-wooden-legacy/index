@@ -233,17 +233,21 @@ function initImageProtection() {
 
 /* ================= COLLECTION PAGE LOGIC ================= */
 
+/* ================= COLLECTION PAGE LOGIC ================= */
+
 function initCollections() {
     const grid = document.getElementById('collection-grid');
-    const filtersContainer = document.querySelector('.filters'); // Make sure this class exists in collections.html
+    // ✅ FIX: Target the correct container ID from the new HTML
+    const filtersContainer = document.getElementById('filters-container');
 
     if (!grid || !filtersContainer) return;
 
     // 1. Get unique categories from projects
     const categories = ['all', ...new Set(projects.map(p => p.category))];
 
-    // 2. Clear existing static buttons and Generate Dynamic Buttons
+    // 2. Clear existing buttons and Generate Dynamic Buttons
     filtersContainer.innerHTML = '';
+
     categories.forEach(cat => {
         const btn = document.createElement('button');
         btn.className = cat === 'all' ? 'filter-btn active' : 'filter-btn';
@@ -252,7 +256,7 @@ function initCollections() {
 
         btn.addEventListener('click', () => {
             // Visual toggle
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            filtersContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
             // Logic
@@ -273,16 +277,24 @@ function initCollections() {
 
 function renderProjects(items) {
     const grid = document.getElementById('collection-grid');
+    const emptyState = document.getElementById('empty-state');
+
     grid.innerHTML = '';
 
     if (items.length === 0) {
-        grid.innerHTML = '<p class="no-results">No projects found in this category.</p>';
+        emptyState.style.display = 'block';
+        grid.style.display = 'none';
         return;
+    } else {
+        emptyState.style.display = 'none';
+        grid.style.display = 'grid';
     }
 
-    items.forEach(project => {
+    items.forEach((project, index) => {
         const card = document.createElement('div');
-        card.className = 'project-card animate-up';
+        // Add animation delay classes
+        card.className = `project-card animate-up`;
+        card.style.animationDelay = `${index * 0.1}s`;
 
         // Use MEDIA object if available, otherwise fallback to images array
         let mediaItem;
@@ -295,17 +307,17 @@ function renderProjects(items) {
         let mediaHtml = '';
         if (mediaItem.type === 'youtube') {
             const ytId = mediaItem.src;
-            mediaHtml = `<div class="video-container" style="position:relative; width:100%; height:100%; background:#111; overflow:hidden;">
-                <iframe src="${convertToVideoUrl(ytId, true)}" style="position:absolute; top:-10%; left:0; width:100%; height:120%; border:none; pointer-events:none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" frameborder="0"></iframe>
-                <div class="video-gradient-overlay"></div>
+            mediaHtml = `<div class="video-container">
+                <img src="https://img.youtube.com/vi/${ytId}/maxresdefault.jpg" alt="${project.title}" onerror="this.src='https://img.youtube.com/vi/${ytId}/hqdefault.jpg'">
+                <div class="play-icon"><i class="fas fa-play"></i></div>
             </div>`;
         } else if (mediaItem.type === 'video') {
             const videoUrl = mediaItem.src.includes('preview') ? mediaItem.src : `https://drive.google.com/file/d/${getDriveId(mediaItem.src)}/preview`;
-            mediaHtml = `<div class="video-container" style="position:relative; width:100%; height:100%; background:#111; overflow:hidden;">
-                <iframe src="${videoUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay" frameborder="0"></iframe>
+            mediaHtml = `<div class="video-container">
+                <iframe src="${videoUrl}" frameborder="0" allow="autoplay" loading="lazy"></iframe>
             </div>`;
         } else {
-            mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'">`;
+            mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy">`;
         }
 
         card.innerHTML = `
