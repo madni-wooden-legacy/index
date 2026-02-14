@@ -836,3 +836,162 @@ footer {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ================= 3D ANIMATIONS ================= */
+
+/* Perspective Container for 3D Effects */
+.grid-3,
+.project-grid {
+    perspective: 1200px;
+    perspective-origin: center center;
+}
+
+/* 3D Card Base Styles */
+.cat-card,
+.project-card,
+.feature-box,
+.project-item {
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+/* 3D Hover States */
+.cat-card:hover,
+.project-card:hover,
+.feature-box:hover {
+    box-shadow:
+        0 25px 50px rgba(26, 58, 46, 0.2),
+        0 0 0 1px rgba(212, 165, 116, 0.1);
+    z-index: 10;
+}
+
+/* 3D Entrance Animation */
+@keyframes rotateIn3D {
+    from {
+        opacity: 0;
+        transform: perspective(1200px) rotateX(15deg) rotateY(-15deg) translateY(40px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: perspective(1200px) rotateX(0) rotateY(0) translateY(0) scale(1);
+    }
+}
+
+@keyframes float3D {
+
+    0%,
+    100% {
+        transform: translateY(0) rotateX(0) rotateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px) rotateX(2deg) rotateY(2deg);
+    }
+}
+
+/* Apply Entrance Animation */
+.animate-up {
+    animation: rotateIn3D 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    opacity: 0;
+}
+
+.animate-up:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.animate-up:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.animate-up:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.animate-up:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.animate-up:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.animate-up:nth-child(6) {
+    animation-delay: 0.6s;
+}
+
+/* 3D Tilt Active State */
+.tilt-3d {
+    transform-style: preserve-3d;
+    transform: perspective(1000px) rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg)) translateZ(var(--translateZ, 0px));
+}
+
+/* 3D Shine Effect */
+.cat-card::before,
+.project-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+            rgba(255, 255, 255, 0.15) 0%,
+            transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 2;
+    border-radius: inherit;
+}
+
+.cat-card:hover::before,
+.project-card:hover::before {
+    opacity: 1;
+}
+
+/* Project Item Special 3D */
+.project-item {
+    perspective: 1000px;
+}
+
+.project-item .overlay-text {
+    transform: translateZ(50px);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.project-item:hover .overlay-text {
+    transform: translateZ(80px);
+}
+
+/* Mobile: Disable 3D for better performance */
+@media (max-width: 768px) {
+
+    .cat-card,
+    .project-card,
+    .feature-box,
+    .project-item {
+        transform: none !important;
+    }
+
+    .cat-card::before,
+    .project-card::before {
+        display: none;
+    }
+
+    @keyframes rotateIn3D {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}

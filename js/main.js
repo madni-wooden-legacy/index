@@ -20,7 +20,141 @@ document.addEventListener('DOMContentLoaded', () => {
         // Default or Home
         initHomePageFeatured();
     }
+
+    init3DTiltEffect();      // 3D tilt on hover
+    initParallaxEffect();     // 3D parallax on scroll (optional)
+
 });
+
+
+/* ================= 3D TILT EFFECT ================= */
+
+function init3DTiltEffect() {
+    // Select all cards that should have 3D effect
+    const tiltCards = document.querySelectorAll('.cat-card, .project-card, .feature-box, .project-item');
+
+    // Check if device supports hover (desktop)
+    const hasHover = window.matchMedia('(hover: hover)').matches;
+
+    if (!hasHover) {
+        console.log('Touch device detected - 3D tilt disabled');
+        return;
+    }
+
+    tiltCards.forEach(card => {
+        // Mouse enter - add tilt class
+        card.addEventListener('mouseenter', function () {
+            this.classList.add('tilt-active');
+        });
+
+        // Mouse move - calculate tilt
+        card.addEventListener('mousemove', function (e) {
+            const rect = this.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height;
+
+            // Mouse position relative to card
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Center of card
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            // Calculate rotation (max 15 degrees)
+            const maxRotation = 12;
+            const rotateX = ((mouseY - centerY) / centerY) * -maxRotation;
+            const rotateY = ((mouseX - centerX) / centerX) * maxRotation;
+
+            // Calculate translateZ (lift effect)
+            const translateZ = 20;
+
+            // Calculate shine position
+            const percentX = (mouseX / width) * 100;
+            const percentY = (mouseY / height) * 100;
+
+            // Apply transforms using requestAnimationFrame for performance
+            requestAnimationFrame(() => {
+                this.style.setProperty('--rotateX', `${rotateX}deg`);
+                this.style.setProperty('--rotateY', `${rotateY}deg`);
+                this.style.setProperty('--translateZ', `${translateZ}px`);
+                this.style.setProperty('--mouse-x', `${percentX}%`);
+                this.style.setProperty('--mouse-y', `${percentY}%`);
+
+                this.style.transform = `
+                    perspective(1000px) 
+                    rotateX(${rotateX}deg) 
+                    rotateY(${rotateY}deg) 
+                    translateZ(${translateZ}px)
+                    scale3d(1.02, 1.02, 1.02)
+                `;
+
+                // Dynamic shadow based on tilt
+                const shadowX = -rotateY * 2;
+                const shadowY = rotateX * 2;
+                const shadowBlur = 30 + Math.abs(rotateX) + Math.abs(rotateY);
+                const shadowOpacity = 0.15 + (Math.abs(rotateX) + Math.abs(rotateY)) / 200;
+
+                this.style.boxShadow = `
+                    ${shadowX}px ${shadowY}px ${shadowBlur}px rgba(26, 58, 46, ${shadowOpacity}),
+                    0 0 0 1px rgba(212, 165, 116, 0.1)
+                `;
+            });
+        });
+
+        // Mouse leave - reset tilt
+        card.addEventListener('mouseleave', function () {
+            this.classList.remove('tilt-active');
+
+            requestAnimationFrame(() => {
+                this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0) scale3d(1, 1, 1)';
+                this.style.boxShadow = '';
+            });
+        });
+
+        // Optional: Click effect
+        card.addEventListener('click', function () {
+            this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0) scale3d(0.98, 0.98, 0.98)';
+            setTimeout(() => {
+                this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0) scale3d(1, 1, 1)';
+            }, 150);
+        });
+    });
+
+    console.log('✅ 3D Tilt Effect initialized on ' + tiltCards.length + ' cards');
+}
+
+/* ================= PARALLAX SCROLL EFFECT ================= */
+
+function initParallaxEffect() {
+    const projectItems = document.querySelectorAll('.project-item');
+
+    if (projectItems.length === 0) return;
+
+    let ticking = false;
+
+    window.addEventListener('scroll', function () {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                projectItems.forEach((item, index) => {
+                    const rect = item.getBoundingClientRect();
+                    const windowHeight = window.innerHeight;
+
+                    // Check if item is visible
+                    if (rect.top < windowHeight && rect.bottom > 0) {
+                        const scrollPercent = (windowHeight - rect.top) / (windowHeight + rect.height);
+                        const translateY = scrollPercent * 20 - 10;
+                        const rotateX = scrollPercent * 10 - 5;
+
+                        item.style.transform = `translateY(${translateY}px) rotateX(${rotateX}deg)`;
+                    }
+                });
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+}
 
 const DRIVE_API_URL = 'https://script.google.com/macros/s/AKfycbwcQa_-yKVsrCQyJRiur5DlC6QOo8szn2QzOHhsQFG29YCvTUd2RZD3gkbkXK5N62IHog/exec';
 
