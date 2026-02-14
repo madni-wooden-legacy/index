@@ -1,15 +1,32 @@
 /* ================= VARIABLES & RESET ================= */
 :root {
-    --color-primary: #1A1A1A;
-    /* Charcoal Black */
-    --color-secondary: #F9F9F9;
-    /* Off-White */
-    --color-accent: #D4AF37;
-    /* Gold/Brass */
-    --color-mahogany: #4A0404;
-    /* Deep Mahogany */
-    --color-text: #333333;
-    --color-text-light: #666666;
+    /* Primary Colors - NEW! */
+    --color-primary: #1A3A2E;
+    /* Deep Forest Green */
+    --color-forest-green: #2D4A3E;
+    /* Lighter Forest Green */
+
+    /* Secondary Colors - NEW! */
+    --color-secondary: #F5F1E8;
+    /* Cream */
+
+    /* Accent Colors - UPDATED! */
+    --color-accent: #D4A574;
+    /* Gold Accent (very close to your old gold) */
+
+    /* Wood Tones - NEW! */
+    --color-mahogany: #8B4513;
+    /* Terracotta Brown */
+    --color-warm-brown: #A0522D;
+    /* Warm Brown */
+
+    /* Text Colors - UPDATED! */
+    --color-text: #2C2416;
+    /* Dark Brown Text */
+    --color-text-light: #6B5D4D;
+    /* Light Brown Text */
+
+    /* Keep existing - NO CHANGE */
     --font-heading: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
     --radius: 4px;
@@ -18,13 +35,26 @@
 }
 
 /* Dark Mode Overrides */
+/* Dark Mode Overrides - UPDATED! */
 body.dark-mode {
-    --color-primary: #000000;
-    --color-secondary: #121212;
-    --color-text: #E5E5E5;
-    --color-text-light: #AAAAAA;
+    --color-primary: #0F241C;
+    /* Darker Forest Green */
+    --color-secondary: #1A3A2E;
+    /* Medium Forest Green */
+    --color-text: #F5F1E8;
+    /* Cream Text */
+    --color-text-light: #C4B8A8;
+    /* Light Cream */
     background-color: var(--color-secondary);
     color: var(--color-text);
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode .cat-info h4 {
+    color: #F5F1E8;
 }
 
 * {
@@ -102,25 +132,29 @@ img {
 
 .btn-gold {
     background-color: var(--color-accent);
-    color: #fff;
+    color: #2C2416;
+    /* Dark text on gold looks premium */
 }
 
 .btn-gold:hover {
-    background-color: #b5952f;
+    background-color: #B8945F;
+    /* Darker gold on hover */
     transform: translateY(-2px);
 }
 
 .btn-outline {
-    border-color: var(--color-accent);
+    border-color: var(--color-primary);
+    /* Green border */
     color: var(--color-text);
 }
 
 body.dark-mode .btn-outline {
-    color: #fff;
+    color: #F5F1E8;
 }
 
 .btn-outline:hover {
-    background-color: var(--color-accent);
+    background-color: var(--color-primary);
+    /* Green background on hover */
     color: #fff;
 }
 
@@ -210,7 +244,10 @@ body.dark-mode .site-header {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+    /* Green-tinted gradient - UPDATED! */
+    background: linear-gradient(to bottom,
+            rgba(26, 58, 46, 0.3),
+            rgba(26, 58, 46, 0.7));
 }
 
 .hero-content {
