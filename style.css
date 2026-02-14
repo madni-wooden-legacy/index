@@ -1,60 +1,39 @@
 /* ================= VARIABLES & RESET ================= */
 :root {
-    /* Primary Colors - NEW! */
+    /* Primary Colors */
     --color-primary: #1A3A2E;
     /* Deep Forest Green */
     --color-forest-green: #2D4A3E;
     /* Lighter Forest Green */
 
-    /* Secondary Colors - NEW! */
+    /* Secondary Colors */
     --color-secondary: #F5F1E8;
     /* Cream */
 
-    /* Accent Colors - UPDATED! */
+    /* Accent Colors */
     --color-accent: #D4A574;
-    /* Gold Accent (very close to your old gold) */
+    /* Gold Accent */
 
-    /* Wood Tones - NEW! */
+    /* Wood Tones */
     --color-mahogany: #8B4513;
     /* Terracotta Brown */
     --color-warm-brown: #A0522D;
     /* Warm Brown */
 
-    /* Text Colors - UPDATED! */
+    /* Text Colors */
     --color-text: #2C2416;
     /* Dark Brown Text */
     --color-text-light: #6B5D4D;
     /* Light Brown Text */
 
-    /* Keep existing - NO CHANGE */
+    /* Typography */
     --font-heading: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
+
+    /* Utilities */
     --radius: 4px;
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     --transition: all 0.3s ease;
-}
-
-/* Dark Mode Overrides */
-/* Dark Mode Overrides - UPDATED! */
-body.dark-mode {
-    --color-primary: #0F241C;
-    /* Darker Forest Green */
-    --color-secondary: #1A3A2E;
-    /* Medium Forest Green */
-    --color-text: #F5F1E8;
-    /* Cream Text */
-    --color-text-light: #C4B8A8;
-    /* Light Cream */
-    background-color: var(--color-secondary);
-    color: var(--color-text);
-}
-
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode h4,
-body.dark-mode .cat-info h4 {
-    color: #F5F1E8;
 }
 
 * {
@@ -80,14 +59,6 @@ h6 {
     font-family: var(--font-heading);
     color: var(--color-primary);
     font-weight: 700;
-}
-
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode h4,
-body.dark-mode .cat-info h4 {
-    color: #fff;
 }
 
 a {
@@ -133,44 +104,39 @@ img {
 .btn-gold {
     background-color: var(--color-accent);
     color: #2C2416;
-    /* Dark text on gold looks premium */
 }
 
 .btn-gold:hover {
     background-color: #B8945F;
-    /* Darker gold on hover */
     transform: translateY(-2px);
 }
 
 .btn-outline {
-    border-color: var(--color-primary);
-    /* Green border */
-    color: var(--color-text);
-}
-
-body.dark-mode .btn-outline {
-    color: #F5F1E8;
+    border-color: var(--color-accent);
+    /* Gold border */
+    color: var(--color-accent);
+    /* Gold text */
+    background: transparent;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .btn-outline:hover {
-    background-color: var(--color-primary);
-    /* Green background on hover */
-    color: #fff;
+    background-color: var(--color-accent);
+    /* Gold background */
+    color: #2C2416;
+    /* Dark text */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 165, 116, 0.35);
 }
 
 /* ================= HEADER ================= */
 .site-header {
-    background-color: #fff;
+    background-color: var(--color-primary);
     padding: 20px 0;
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-body.dark-mode .site-header {
-    background-color: var(--color-primary);
-    border-bottom: 1px solid #333;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .header-flex {
@@ -182,6 +148,11 @@ body.dark-mode .site-header {
 .logo h1 {
     font-size: 1.8rem;
     margin: 0;
+    color: #F5F1E8;
+}
+
+.logo h1 .gold {
+    color: var(--color-accent);
 }
 
 .main-nav ul {
@@ -193,6 +164,7 @@ body.dark-mode .site-header {
     font-weight: 500;
     font-size: 0.95rem;
     position: relative;
+    color: rgba(245, 241, 232, 0.8);
 }
 
 .main-nav a:hover,
@@ -211,8 +183,8 @@ body.dark-mode .site-header {
     transition: width 0.3s;
 }
 
-.main-nav a:hover {
-    color: var(--color-accent);
+.main-nav a:hover::after {
+    width: 100%;
 }
 
 .mobile-extras {
@@ -225,6 +197,7 @@ body.dark-mode .site-header {
     display: none;
     font-size: 1.5rem;
     cursor: pointer;
+    color: #F5F1E8;
 }
 
 /* ================= HERO ================= */
@@ -244,7 +217,6 @@ body.dark-mode .site-header {
     left: 0;
     right: 0;
     bottom: 0;
-    /* Green-tinted gradient - UPDATED! */
     background: linear-gradient(to bottom,
             rgba(26, 58, 46, 0.3),
             rgba(26, 58, 46, 0.7));
@@ -269,6 +241,7 @@ body.dark-mode .site-header {
     font-size: 1.2rem;
     margin-bottom: 30px;
     opacity: 0.9;
+    color: #F5F1E8;
 }
 
 /* ================= SECTIONS GLOBALS ================= */
@@ -284,13 +257,14 @@ body.dark-mode .site-header {
 .section-title h3 {
     font-size: 2.5rem;
     margin-bottom: 10px;
+    color: var(--color-primary);
 }
 
 .section-title p {
     color: var(--color-text-light);
 }
 
-/* ================= COLLECTION GRID (OLD & NEW) ================= */
+/* ================= COLLECTION GRID ================= */
 .cat-card {
     position: relative;
     overflow: hidden;
@@ -315,7 +289,7 @@ body.dark-mode .site-header {
     left: 0;
     right: 0;
     padding: 30px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    background: linear-gradient(to top, rgba(26, 58, 46, 0.9), transparent);
     color: #fff;
 }
 
@@ -334,7 +308,7 @@ body.dark-mode .site-header {
 /* ================= FEATURES ================= */
 .bg-dark {
     background-color: var(--color-primary);
-    color: #fff;
+    color: #F5F1E8;
 }
 
 .feature-box {
@@ -348,17 +322,17 @@ body.dark-mode .site-header {
 }
 
 .feature-box h4 {
-    color: #fff;
+    color: #F5F1E8;
     font-size: 1.25rem;
     margin-bottom: 15px;
 }
 
 .feature-box p {
-    color: #ccc;
+    color: #C4B8A8;
     font-size: 0.95rem;
 }
 
-/* ================= PROJECT GRID (DYNAMIC) ================= */
+/* ================= PROJECT GRID ================= */
 .project-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -378,7 +352,6 @@ body.dark-mode .site-header {
     height: 100%;
     object-fit: cover;
     transition: transform 0.5s;
-    /* Added to fix dynamic image property */
     position: absolute;
     top: 0;
     left: 0;
@@ -391,7 +364,7 @@ body.dark-mode .site-header {
 .overlay-text {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(26, 58, 46, 0.8);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -424,7 +397,7 @@ body.dark-mode .site-header {
     padding-bottom: 2px;
 }
 
-/* ================= NEW: COLLECTIONS PAGE ================= */
+/* ================= COLLECTIONS PAGE ================= */
 .filters {
     display: flex;
     justify-content: center;
@@ -435,23 +408,19 @@ body.dark-mode .site-header {
 
 .filter-btn {
     background: none;
-    border: 1px solid #ddd;
+    border: 1px solid #D4A574;
     padding: 8px 20px;
     border-radius: 30px;
     cursor: pointer;
     font-family: var(--font-body);
     transition: all 0.3s;
-}
-
-body.dark-mode .filter-btn {
-    border-color: #444;
-    color: #fff;
+    color: var(--color-primary);
 }
 
 .filter-btn.active,
 .filter-btn:hover {
     background-color: var(--color-accent);
-    color: #fff;
+    color: #2C2416;
     border-color: var(--color-accent);
 }
 
@@ -460,10 +429,6 @@ body.dark-mode .filter-btn {
     border-radius: var(--radius);
     overflow: hidden;
     transition: transform 0.3s;
-}
-
-body.dark-mode .project-card {
-    background: #1e1e1e;
 }
 
 .project-card:hover {
@@ -493,43 +458,34 @@ body.dark-mode .project-card {
 .card-info span {
     font-size: 0.8rem;
     text-transform: uppercase;
-    color: var(--color-accent);
+    color: var(--color-mahogany);
     font-weight: 600;
 }
 
 .card-info h3 {
     font-size: 1.2rem;
     margin-top: 5px;
+    color: var(--color-primary);
 }
 
-/* ================= NEW: DETAILS PAGE ================= */
+/* ================= DETAILS PAGE ================= */
 .project-header {
     margin-bottom: 40px;
 }
 
 .project-details-grid {
     display: block;
-    /* Removed grid to allow full width */
     margin-bottom: 60px;
 }
 
 .detail-sidebar {
     display: none;
-    /* User requested removal */
-}
-
-body.dark-mode .detail-sidebar {
-    background: #1e1e1e;
 }
 
 .detail-sidebar ul li {
     padding: 12px 0;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #E8E4DF;
     font-size: 0.95rem;
-}
-
-body.dark-mode .detail-sidebar ul li {
-    border-color: #333;
 }
 
 .detail-sidebar ul li:last-child {
@@ -554,13 +510,11 @@ body.dark-mode .detail-sidebar ul li {
 
 .gallery-grid {
     column-width: 300px;
-    /* Flexible columns: fills space if few items, makes columns if many */
     column-gap: 20px;
     width: 100%;
     display: block;
 }
 
-/* Ensure images don't break layout */
 .gallery-grid img {
     width: 100%;
     display: block;
@@ -570,7 +524,6 @@ body.dark-mode .detail-sidebar ul li {
 
 .gallery-item {
     display: inline-block;
-    /* Essential for Masonry */
     width: 100%;
     margin-bottom: 20px;
     break-inside: avoid;
@@ -580,12 +533,10 @@ body.dark-mode .detail-sidebar ul li {
     background: #f4f4f4;
 }
 
-/* Fix for sidebar overlap - make sure grid columns align top */
 .project-details-grid {
     align-items: flex-start;
 }
 
-/* Responsive Masonry */
 @media (max-width: 900px) {
     .gallery-grid {
         column-count: 2;
@@ -602,13 +553,13 @@ body.dark-mode .detail-sidebar ul li {
 .folder-nav-container {
     margin-bottom: 40px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #E8E4DF;
 }
 
 .folder-nav-container h4 {
     margin-bottom: 15px;
     font-size: 1rem;
-    color: #888;
+    color: #6B5D4D;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -621,7 +572,7 @@ body.dark-mode .detail-sidebar ul li {
 
 .folder-nav button {
     background: #fff;
-    border: 1px solid #ddd;
+    border: 1px solid #D4A574;
     padding: 15px 25px;
     border-radius: var(--radius);
     cursor: pointer;
@@ -632,6 +583,7 @@ body.dark-mode .detail-sidebar ul li {
     gap: 10px;
     transition: all 0.3s;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    color: var(--color-text);
 }
 
 .folder-nav button i {
@@ -641,22 +593,22 @@ body.dark-mode .detail-sidebar ul li {
 .folder-nav button:hover,
 .folder-nav button.active {
     background: var(--color-accent);
-    color: white;
+    color: #2C2416;
     border-color: var(--color-accent);
     transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 5px 15px rgba(212, 165, 116, 0.3);
 }
 
 .folder-nav button:hover i,
 .folder-nav button.active i {
-    color: white;
+    color: #2C2416;
 }
 
 /* ================= LIGHTBOX ================= */
 .lightbox {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.98);
+    background: rgba(15, 36, 28, 0.98);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -682,7 +634,7 @@ body.dark-mode .detail-sidebar ul li {
     position: absolute;
     top: 20px;
     right: 30px;
-    color: #fff;
+    color: #F5F1E8;
     font-size: 3rem;
     cursor: pointer;
 }
@@ -690,7 +642,7 @@ body.dark-mode .detail-sidebar ul li {
 /* ================= FOOTER ================= */
 footer {
     background-color: var(--color-primary);
-    color: #fff;
+    color: #F5F1E8;
     padding: 60px 0 20px;
 }
 
@@ -705,10 +657,14 @@ footer {
 
 .copyright {
     text-align: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(245, 241, 232, 0.1);
     padding-top: 20px;
     font-size: 0.85rem;
-    color: #888;
+    color: #C4B8A8;
+}
+
+footer a {
+    color: var(--color-accent);
 }
 
 /* ================= RESPONSIVE ================= */
@@ -732,14 +688,10 @@ footer {
         right: -100%;
         top: 70px;
         width: 100%;
-        background: #fff;
+        background: var(--color-primary);
         padding: 20px;
         transition: 0.3s;
         box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    body.dark-mode .main-nav {
-        background: var(--color-primary);
     }
 
     .main-nav.active {
@@ -754,15 +706,12 @@ footer {
     .hamburger {
         display: block;
     }
-
-
 }
 
 /* ================= VIDEO CONTAINERS ================= */
 .video-container {
     position: relative;
     width: 100%;
-    /* Default to vertical aspect ratio (9:16) */
     aspect-ratio: 9 / 16;
     background: #111;
     overflow: hidden;
@@ -773,14 +722,12 @@ footer {
     position: absolute;
     width: 100%;
     height: 125%;
-    /* Taller to overflow the top/bottom clutter */
     top: -12.5%;
     left: 0;
     border: none;
     pointer-events: none;
 }
 
-/* Soft Gradient to keep it premium but compliant with YT policies */
 .video-container::before {
     content: '';
     position: absolute;
@@ -788,13 +735,11 @@ footer {
     left: 0;
     right: 0;
     height: 80px;
-    /* Fade top UI */
     background: linear-gradient(to bottom, #111 20%, rgba(17, 17, 17, 0) 100%);
     z-index: 5;
     pointer-events: none;
 }
 
-/* Show briefly some text as requested */
 .video-container::after {
     content: 'YouTube Playback';
     position: absolute;
@@ -830,13 +775,11 @@ footer {
     top: 0;
 }
 
-/* Responsive fixes */
 @media (max-width: 768px) {
     .project-grid {
         grid-template-columns: 1fr;
     }
 }
-
 
 /* ================= 3D ANIMATIONS ================= */
 
@@ -879,18 +822,6 @@ footer {
     to {
         opacity: 1;
         transform: perspective(1200px) rotateX(0) rotateY(0) translateY(0) scale(1);
-    }
-}
-
-@keyframes float3D {
-
-    0%,
-    100% {
-        transform: translateY(0) rotateX(0) rotateY(0);
-    }
-
-    50% {
-        transform: translateY(-10px) rotateX(2deg) rotateY(2deg);
     }
 }
 

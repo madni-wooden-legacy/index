@@ -3,7 +3,6 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
     initMobileMenu();
     initImageProtection();
 
@@ -210,25 +209,6 @@ function fetchProjectsFromDrive(callback) {
 
 
 /* ================= THEME & UI ================= */
-
-function initTheme() {
-    // Check local storage for theme
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-    }
-
-    // Setup toggle button if it exists
-    const toggleBtn = document.getElementById('theme-toggle');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
-    }
-}
 
 function initMobileMenu() {
     const hamburger = document.querySelector('.hamburger');
