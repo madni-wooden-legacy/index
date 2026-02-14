@@ -199,10 +199,37 @@ function generateProjectsData(store) {
     currentProjects.forEach(p => { updatedProjectsMap[p.id] = p; });
 
     const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+
+    // CRITICAL FIX: Build a Folder ID → Current Name map from Drive FIRST
+    // This allows us to detect renames regardless of whether folders appear "changed"
+    const driveFolderMap = {}; // Maps Folder ID → {name, projectId}
     const categories = root.getFolders();
+    const categoryList = [];
 
     while (categories.hasNext()) {
         const cat = categories.next();
+        categoryList.push(cat);
+        const name = cat.getName();
+        const key = name.toLowerCase();
+        const projectId = key.replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        driveFolderMap[cat.getId()] = { name, projectId };
+    }
+
+    // RENAME CLEANUP: Check if any existing project has been renamed in Drive
+    Object.keys(updatedProjectsMap).forEach(oldProjectId => {
+        const project = updatedProjectsMap[oldProjectId];
+        if (project.driveFolderId && driveFolderMap[project.driveFolderId]) {
+            const currentInfo = driveFolderMap[project.driveFolderId];
+            if (currentInfo.projectId !== oldProjectId) {
+                console.log(`🏷️ Rename detected: '${oldProjectId}' → '${currentInfo.projectId}'. Removing old entry.`);
+                delete updatedProjectsMap[oldProjectId];
+                delete savedState[oldProjectId];
+            }
+        }
+    });
+
+    // Now process each category (using the pre-built list)
+    for (const cat of categoryList) {
         const name = cat.getName();
         const key = name.toLowerCase();
         // FIX: Sanitize ID to be URL-safe (remove &, replace spaces with -)
@@ -228,16 +255,8 @@ function generateProjectsData(store) {
             continue;
         }
 
-        // RENAME DETECTION (Main Loop):
-        // Check if this Folder ID is already being used by an old project ID (slug)
-        Object.keys(updatedProjectsMap).forEach(oldId => {
-            if (updatedProjectsMap[oldId].driveFolderId === catId && oldId !== projectId) {
-                console.log(`🏷️ Rename detected in Drive: '${oldId}' is now '${projectId}'. Swapping...`);
-                delete updatedProjectsMap[oldId];
-                // Also remove from savedState so we re-scan the "new" project
-                delete savedState[oldId];
-            }
-        });
+        // Rename detection already handled at the top of generateProjectsData
+        // This section is now redundant and can be removed
 
         // FORCE RESYNC OPTIMIZATION:
         // Even if we are forcing a resync, if we completed this specific category in a previous partial run of THIS batch, skip it.
