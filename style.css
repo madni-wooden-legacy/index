@@ -1130,15 +1130,17 @@ footer a {
 .form-group textarea,
 .form-group select {
     width: 100%;
-    padding: 15px 15px 15px 45px;
+    padding: 18px 15px 18px 45px;
+    /* Increased vertical padding slightly */
     border: 1px solid #E8E4DF;
     border-radius: 8px;
     font-size: 15px;
     font-family: var(--font-body);
     background: var(--color-secondary);
-    /* Cream background for inputs */
     color: var(--color-text);
     transition: all 0.3s ease;
+    line-height: 1.2;
+    /* Helps vertically center the typed text */
 }
 
 .form-group input:focus,
@@ -1161,8 +1163,11 @@ footer a {
     pointer-events: none;
     transition: all 0.3s ease;
     background: transparent;
-    /* Transparent for cream bg */
     padding: 0 5px;
+    line-height: 1;
+    height: auto;
+    display: block;
+    margin: 0;
 }
 
 /* Adjust label for cream input bg */
