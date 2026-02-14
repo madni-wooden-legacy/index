@@ -196,7 +196,7 @@ body.dark-mode .site-header {
 /* ================= HERO ================= */
 .hero {
     height: 85vh;
-    background: url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80') no-repeat center center/cover;
+    background: url('assets/images/01.jpg') no-repeat center center/cover;
     position: relative;
     display: flex;
     align-items: center;
