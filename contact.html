@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Contact | Madni Wooden Legacy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | Madni Wooden Legacy</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap"
         rel="stylesheet">
@@ -12,67 +13,542 @@
 </head>
 
 <body>
+
     <header class="site-header">
         <div class="container header-flex">
-            <div class="logo"><a href="index.html">
+            <div class="logo">
+                <a href="index.html">
                     <h1>Madni <span class="gold">Wooden Legacy</span></h1>
-                </a></div>
+                </a>
+            </div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About Us</a></li>
                     <li><a href="collections.html">Collections</a></li>
-                    <li><a href="about.html" class="active">About Us</a></li>
                     <li><a href="contact.html" class="active">Contact</a></li>
                 </ul>
             </nav>
+            <div class="mobile-extras">
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
         </div>
     </header>
 
-    <div class="section container">
-        <div class="project-details-grid" style="grid-template-columns: 1fr 1fr; align-items:center;">
-            <div>
-                <h2>Get in Touch</h2>
-                <p style="margin-bottom:30px;">Ready to start your project? Contact us for a consultation or quote.</p>
-
-                <div class="feature-box" style="padding:0; margin-bottom:20px; text-align:left;">
-                    <i class="fas fa-phone gold-icon" style="font-size:1.2rem;"></i>
-                    <span style="font-weight:600; font-size:1.1rem; margin-left:10px;">+92 300 4339143</span>
-                </div>
-                <div class="feature-box" style="padding:0; margin-bottom:20px; text-align:left;">
-                    <i class="fas fa-map-marker-alt gold-icon" style="font-size:1.2rem;"></i>
-                    <span style="font-weight:600; font-size:1.1rem; margin-left:10px;">Defence Colony,
-                        Sheikhupura</span>
-                </div>
-                <div class="feature-box" style="padding:0; margin-bottom:20px; text-align:left;">
-                    <i class="fas fa-envelope gold-icon" style="font-size:1.2rem;"></i>
-                    <span
-                        style="font-weight:600; font-size:1.1rem; margin-left:10px;">madniwoodenlegacy@gmail.com</span>
+    <!-- Contact Hero Section -->
+    <section class="contact-hero">
+        <div class="contact-hero-bg">
+            <div class="hero-pattern"></div>
+        </div>
+        <div class="container">
+            <div class="contact-hero-content animate-up">
+                <span class="hero-badge">Let's Create Together</span>
+                <h2>Start Your Custom Project</h2>
+                <p>Transform your vision into handcrafted wooden masterpieces. Get a personalized quote within 24 hours.
+                </p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Projects Completed</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">27+</span>
+                        <span class="stat-label">Years Experience</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Client Satisfaction</span>
+                    </div>
                 </div>
             </div>
-
-            <form style="background:#f9f9f9; padding:40px; border-radius:4px;">
-                <h3 style="margin-bottom:20px;">Send a Message</h3>
-                <div style="margin-bottom:15px;">
-                    <label style="display:block; margin-bottom:5px; font-weight:600;">Name</label>
-                    <input type="text" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;"
-                        placeholder="Your Name">
-                </div>
-                <div style="margin-bottom:15px;">
-                    <label style="display:block; margin-bottom:5px; font-weight:600;">Phone</label>
-                    <input type="tel" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;"
-                        placeholder="0300...">
-                </div>
-                <div style="margin-bottom:15px;">
-                    <label style="display:block; margin-bottom:5px; font-weight:600;">Message</label>
-                    <textarea rows="4" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;"
-                        placeholder="Tell us about your project..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-gold" style="width:100%;">Send Inquiry</button>
-            </form>
         </div>
-    </div>
+    </section>
+
+    <!-- Main Contact Section -->
+    <section class="contact-main">
+        <div class="container">
+            <div class="contact-grid">
+
+                <!-- Left Column - Form -->
+                <div class="contact-form-wrapper animate-up delay-1">
+                    <div class="form-header">
+                        <h3>Send Us Your Requirements</h3>
+                        <p>Fill out the form below and we'll get back to you within 24 hours</p>
+                    </div>
+
+                    <form id="contact-form" class="modern-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="name" name="name" required autocomplete="off">
+                                <label for="name">Your Name</label>
+                                <span class="focus-border"></span>
+                                <span class="input-icon"><i class="fas fa-user"></i></span>
+                                <span class="validation-message"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="tel" id="phone" name="phone" required autocomplete="off">
+                                <label for="phone">Phone Number</label>
+                                <span class="focus-border"></span>
+                                <span class="input-icon"><i class="fas fa-phone"></i></span>
+                                <span class="validation-message"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" required autocomplete="off">
+                            <label for="email">Email Address</label>
+                            <span class="focus-border"></span>
+                            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                            <span class="validation-message"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <select id="project-type" name="project_type" required>
+                                <option value="" disabled selected></option>
+                                <option value="door">Doors & Entryways</option>
+                                <option value="kitchen">Kitchen Cabinets</option>
+                                <option value="wardrobe">Wardrobes & Closets</option>
+                                <option value="furniture">Custom Furniture</option>
+                                <option value="bedroom">Bedroom Sets</option>
+                                <option value="office">Office Furniture</option>
+                                <option value="other">Other Projects</option>
+                            </select>
+                            <label for="project-type">Project Type</label>
+                            <span class="focus-border"></span>
+                            <span class="input-icon"><i class="fas fa-hammer"></i></span>
+                        </div>
+
+
+
+                        <div class="form-group full-width">
+                            <textarea id="message" name="message" rows="4" required></textarea>
+                            <label for="message">Describe Your Project</label>
+                            <span class="focus-border"></span>
+                            <span class="input-icon"><i class="fas fa-pencil-alt"></i></span>
+                            <span class="char-count"><span id="char-current">0</span>/500</span>
+                        </div>
+
+                        <button type="submit" class="btn-submit" id="submit-btn">
+                            <span class="btn-text">Send Inquiry</span>
+                            <span class="btn-icon"><i class="fas fa-paper-plane"></i></span>
+                            <span class="btn-loader"><i class="fas fa-spinner fa-spin"></i></span>
+                            <span class="btn-success"><i class="fas fa-check"></i></span>
+                        </button>
+                    </form>
+
+                    <!-- Success Message -->
+                    <div class="form-success" id="form-success">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h4>Message Sent Successfully!</h4>
+                        <p>Thank you for contacting us. We'll get back to you within 24 hours.</p>
+                        <a href="index.html" class="btn btn-outline">Back to Home</a>
+                    </div>
+                </div>
+
+                <!-- Right Column - Info & Map -->
+                <div class="contact-info-wrapper">
+
+                    <!-- Contact Cards -->
+                    <div class="contact-cards">
+                        <div class="contact-card animate-up delay-2">
+                            <div class="card-icon">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <div class="card-content">
+                                <h4>Call Us Directly</h4>
+                                <a href="tel:+923004339143" class="card-link">+92 300 4339143</a>
+                                <p>Mon - Sat: 9:00 AM - 7:00 PM</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-card animate-up delay-3">
+                            <div class="card-icon whatsapp">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div class="card-content">
+                                <h4>WhatsApp Chat</h4>
+                                <a href="https://wa.me/923004339143" target="_blank" class="card-link">Start
+                                    Conversation</a>
+                                <p>Quick response within 1 hour</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-card animate-up delay-4">
+                            <div class="card-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="card-content">
+                                <h4>Visit Our Workshop</h4>
+                                <p>Defence Colony, Sheikhupura, Punjab, Pakistan</p>
+                                <a href="#map" class="card-link">Get Directions</a>
+                            </div>
+                        </div>
+
+                        <div class="contact-card animate-up delay-5">
+                            <div class="card-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="card-content">
+                                <h4>Email Us</h4>
+                                <a href="mailto:madniwoodenlegacy@gmail.com"
+                                    class="card-link">madniwoodenlegacy@gmail.com</a>
+                                <p>Send detailed project specs</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map -->
+                    <div class="map-container animate-up delay-6" id="map">
+                        <div class="map-overlay">
+                            <div class="map-pin">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Madni Wooden Legacy</span>
+                            </div>
+                        </div>
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3402.5!2d74.0!3d31.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzHCsDMwJzAwLjAiTiA3NMKwMDAnMDAuMCJF!5e0!3m2!1sen!2s!4v1234567890"
+                            width="100%" height="300" style="border:0; border-radius: 12px;" allowfullscreen=""
+                            loading="lazy">
+                        </iframe>
+                    </div>
+
+                    <!-- Social Links - HIDDEN FOR NOW
+                    <div class="social-links animate-up delay-7">
+                        <h4>Follow Our Work</h4>
+                        <div class="social-icons">
+                            <a href="https://facebook.com/" target="_blank" class="social-icon facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="https://instagram.com/" target="_blank" class="social-icon instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="https://youtube.com/" target="_blank" class="social-icon youtube">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                            <a href="https://pinterest.com/" target="_blank" class="social-icon pinterest">
+                                <i class="fab fa-pinterest-p"></i>
+                            </a>
+                        </div>
+                    </div>
+                    END HIDDEN SECTION -->
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Projects Preview -->
+    <section class="recent-projects-preview">
+        <div class="container">
+            <div class="section-title animate-up">
+                <h3>Recent Completed Projects</h3>
+                <p>See the quality of our craftsmanship</p>
+            </div>
+            <div class="projects-grid-preview animate-up delay-1">
+                <div class="preview-item">
+                    <img src="https://lh3.googleusercontent.com/d/1bQ0XwSBQJFS9uF9IiUXuYAjugE0bbB8w" alt="Custom Door">
+                    <div class="preview-overlay">
+                        <span>Royal Door</span>
+                    </div>
+                </div>
+                <div class="preview-item">
+                    <img src="https://lh3.googleusercontent.com/d/1k-MPBr-JdfbN85A3mExsJahxqGceh27u" alt="Kitchen">
+                    <div class="preview-overlay">
+                        <span>Modern Kitchen</span>
+                    </div>
+                </div>
+                <div class="preview-item">
+                    <img src="https://lh3.googleusercontent.com/d/1xpxwdJxOz6tRrHxrBx9DKF6X9H9jKrAJ" alt="Wardrobe">
+                    <div class="preview-overlay">
+                        <span>Custom Wardrobe</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cta-container animate-up delay-2">
+                <a href="collections.html" class="btn btn-outline">View All Projects</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/923004339143?text=Hi,%20I'm%20interested%20in%20your%20woodworking%20services"
+        target="_blank" class="whatsapp-float" id="whatsapp-float">
+        <i class="fab fa-whatsapp"></i>
+        <span class="tooltip">Chat with us!</span>
+    </a>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>Madni Wooden Legacy</h3>
+                    <p>Defence Colony, Sheikhupura, Pakistan</p>
+                    <p>+92 300 4339143</p>
+                </div>
+                <div>
+                    <ul style="display:flex; gap:15px; margin-bottom:15px;">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="collections.html">Collections</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2024 Madni Wooden Legacy. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
 
     <script src="js/main.js"></script>
+
+    <!-- Contact Page Scripts -->
+    <script>
+        // ================= FORM VALIDATION & ANIMATION =================
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('contact-form');
+            const submitBtn = document.getElementById('submit-btn');
+            const formSuccess = document.getElementById('form-success');
+
+            // Character counter for message
+            const messageField = document.getElementById('message');
+            const charCount = document.getElementById('char-current');
+
+            messageField.addEventListener('input', function () {
+                const length = this.value.length;
+                charCount.textContent = length;
+
+                if (length > 500) {
+                    this.value = this.value.substring(0, 500);
+                    charCount.textContent = 500;
+                }
+            });
+
+            // Real-time validation
+            const inputs = form.querySelectorAll('input, textarea, select');
+
+            inputs.forEach(input => {
+                // Validate on blur
+                input.addEventListener('blur', function () {
+                    validateField(this);
+                });
+
+                // Clear error on focus
+                input.addEventListener('focus', function () {
+                    clearError(this);
+                });
+
+                // Floating label for inputs/textareas
+                input.addEventListener('input', function () {
+                    if (this.value.trim() !== '') {
+                        this.classList.add('has-value');
+                    } else {
+                        this.classList.remove('has-value');
+                    }
+                });
+
+                // FIX: Handle Select (Dropdown) change specifically
+                if (input.tagName === 'SELECT') {
+                    input.addEventListener('change', function () {
+                        if (this.value !== '') {
+                            this.classList.add('has-value');
+                        } else {
+                            this.classList.remove('has-value');
+                        }
+                        // Also trigger validation on change for better UX
+                        validateField(this);
+                    });
+                }
+            });
+
+            function validateField(field) {
+                const parent = field.closest('.form-group');
+                const message = parent.querySelector('.validation-message');
+                let isValid = true;
+
+                // Remove previous states
+                parent.classList.remove('valid', 'invalid');
+
+                if (field.hasAttribute('required') && field.value.trim() === '') {
+                    isValid = false;
+                    showError(parent, message, 'This field is required');
+                } else if (field.type === 'email' && field.value.trim() !== '') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(field.value)) {
+                        isValid = false;
+                        showError(parent, message, 'Please enter a valid email');
+                    }
+                } else if (field.type === 'tel' && field.value.trim() !== '') {
+                    const phoneRegex = /^[\d\s\-\+\(\)]{10,}$/;
+                    if (!phoneRegex.test(field.value)) {
+                        isValid = false;
+                        showError(parent, message, 'Please enter a valid phone number');
+                    }
+                }
+
+                if (isValid && field.value.trim() !== '') {
+                    showSuccess(parent, message);
+                }
+
+                return isValid;
+            }
+
+            function showError(parent, message, text) {
+                parent.classList.add('invalid');
+                message.textContent = text;
+                message.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + text;
+            }
+
+            function showSuccess(parent, message) {
+                parent.classList.add('valid');
+                message.innerHTML = '<i class="fas fa-check-circle"></i>';
+            }
+
+            function clearError(field) {
+                const parent = field.closest('.form-group');
+                parent.classList.remove('invalid');
+            }
+
+            // Form submission
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Validate all fields
+                let isValid = true;
+                inputs.forEach(input => {
+                    if (!validateField(input)) {
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    // Shake invalid fields
+                    const invalidFields = form.querySelectorAll('.form-group.invalid');
+                    invalidFields.forEach(field => {
+                        field.classList.add('shake');
+                        setTimeout(() => field.classList.remove('shake'), 500);
+                    });
+                    return;
+                }
+
+                // Show loading state
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+
+                // Simulate form submission
+                setTimeout(() => {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.classList.add('success');
+
+                    // Show success message
+                    setTimeout(() => {
+                        form.style.display = 'none';
+                        formSuccess.classList.add('visible');
+
+                        // WhatsApp fallback
+                        const name = document.getElementById('name').value;
+                        const phone = document.getElementById('phone').value;
+                        const email = document.getElementById('email').value;
+                        const projectType = document.getElementById('project-type').value;
+                        const message = document.getElementById('message').value;
+
+                        const whatsappMessage = `New Inquiry from Website
+        
+Name: ${name}
+Phone: ${phone}
+Email: ${email}
+Project Type: ${projectType}
+
+Message: ${message}`;
+
+                        // Uncomment to auto-open WhatsApp
+                        // window.open(`https://wa.me/923004339143?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
+
+                    }, 1500);
+                }, 2000);
+            });
+
+            // ================= INTERACTIVE CARDS =================
+
+            const contactCards = document.querySelectorAll('.contact-card');
+
+            contactCards.forEach(card => {
+                card.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+
+                card.addEventListener('mouseleave', function () {
+                    this.style.transform = '';
+                });
+            });
+
+            // ================= WHATSAPP BUTTON =================
+
+            const whatsappBtn = document.getElementById('whatsapp-float');
+            let lastScrollTop = 0;
+
+            window.addEventListener('scroll', function () {
+                const st = window.pageYOffset || document.documentElement.scrollTop;
+
+                if (st > lastScrollTop && st > 300) {
+                    // Scrolling down
+                    whatsappBtn.classList.add('hidden');
+                } else {
+                    // Scrolling up
+                    whatsappBtn.classList.remove('hidden');
+                }
+
+                lastScrollTop = st <= 0 ? 0 : st;
+            });
+
+            // Pulse animation every 5 seconds
+            setInterval(() => {
+                whatsappBtn.classList.add('pulse');
+                setTimeout(() => whatsappBtn.classList.remove('pulse'), 1000);
+            }, 5000);
+
+            // ================= SCROLL ANIMATIONS =================
+
+            const animateElements = document.querySelectorAll('.animate-up');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animated');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            animateElements.forEach(el => observer.observe(el));
+
+            // ================= MAP INTERACTION =================
+
+            const mapContainer = document.querySelector('.map-container');
+            const mapOverlay = document.querySelector('.map-overlay');
+
+            mapOverlay.addEventListener('click', function () {
+                mapOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    mapOverlay.style.display = 'none';
+                }, 300);
+            });
+
+            mapContainer.addEventListener('mouseleave', function () {
+                mapOverlay.style.display = 'flex';
+                mapOverlay.style.opacity = '1';
+            });
+        });
+    </script>
 </body>
 
 </html>

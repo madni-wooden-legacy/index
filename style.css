@@ -932,10 +932,13 @@ footer a {
 
 /* Contact Hero */
 .contact-hero {
-    background: linear-gradient(135deg, #1a3a2e 0%, #2d4a3e 100%);
-    padding: 100px 0;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-forest-green) 100%);
+    padding: 100px 0 80px;
+    /* Added bottom padding */
     position: relative;
     overflow: hidden;
+    margin-bottom: 60px;
+    /* Separation from next section */
 }
 
 .contact-hero-bg {
@@ -969,13 +972,14 @@ footer a {
     position: relative;
     z-index: 1;
     text-align: center;
-    color: #F5F1E8;
+    color: var(--color-secondary);
+    /* Cream text */
 }
 
 .hero-badge {
     display: inline-block;
-    background: rgba(212, 165, 116, 0.2);
-    border: 1px solid rgba(212, 165, 116, 0.4);
+    background: rgba(212, 165, 116, 0.15);
+    border: 1px solid var(--color-accent);
     padding: 8px 20px;
     border-radius: 30px;
     font-size: 12px;
@@ -983,12 +987,15 @@ footer a {
     letter-spacing: 1px;
     text-transform: uppercase;
     margin-bottom: 20px;
+    color: var(--color-accent);
     animation: fadeInDown 0.8s ease;
 }
 
 .contact-hero-content h2 {
     font-size: 3.5rem;
     margin-bottom: 15px;
+    color: var(--color-secondary);
+    /* Cream */
     animation: fadeInUp 0.8s ease 0.2s both;
 }
 
@@ -997,6 +1004,8 @@ footer a {
     opacity: 0.9;
     max-width: 600px;
     margin: 0 auto 40px;
+    color: var(--color-secondary);
+    /* Cream */
     animation: fadeInUp 0.8s ease 0.4s both;
 }
 
@@ -1016,7 +1025,8 @@ footer a {
     display: block;
     font-size: 2.5rem;
     font-weight: 700;
-    color: #D4A574;
+    color: var(--color-accent);
+    /* Gold */
     line-height: 1;
     margin-bottom: 5px;
 }
@@ -1024,6 +1034,8 @@ footer a {
 .stat-label {
     font-size: 0.85rem;
     opacity: 0.8;
+    color: var(--color-secondary);
+    /* Cream */
 }
 
 .stat-divider {
@@ -1060,7 +1072,8 @@ footer a {
 .contact-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 50px;
+    gap: 60px;
+    /* Increased gap */
     align-items: flex-start;
 }
 
@@ -1069,7 +1082,11 @@ footer a {
     background: white;
     border-radius: 16px;
     padding: 40px;
-    box-shadow: 0 10px 40px rgba(26, 58, 46, 0.1);
+    box-shadow: 0 10px 40px rgba(26, 58, 46, 0.08);
+    border: 1px solid rgba(212, 165, 116, 0.2);
+    /* Gold tint border */
+    margin-bottom: 40px;
+    /* Spacing for mobile */
 }
 
 .form-header {
@@ -1095,12 +1112,14 @@ footer a {
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 25px;
+    /* Increased gap */
 }
 
 .form-group {
     position: relative;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
+    /* Increased margin */
 }
 
 .form-group.full-width {
@@ -1112,11 +1131,13 @@ footer a {
 .form-group select {
     width: 100%;
     padding: 15px 15px 15px 45px;
-    border: 2px solid #e8e4df;
+    border: 1px solid #E8E4DF;
     border-radius: 8px;
     font-size: 15px;
     font-family: var(--font-body);
-    background: white;
+    background: var(--color-secondary);
+    /* Cream background for inputs */
+    color: var(--color-text);
     transition: all 0.3s ease;
 }
 
@@ -1125,6 +1146,8 @@ footer a {
 .form-group select:focus {
     outline: none;
     border-color: var(--color-accent);
+    /* Gold focus */
+    background: #fff;
     box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.15);
 }
 
@@ -1134,18 +1157,15 @@ footer a {
     top: 50%;
     transform: translateY(-50%);
     font-size: 15px;
-    color: #999;
+    color: var(--color-text-light);
     pointer-events: none;
     transition: all 0.3s ease;
-    background: white;
+    background: transparent;
+    /* Transparent for cream bg */
     padding: 0 5px;
 }
 
-.form-group textarea+label {
-    top: 20px;
-    transform: translateY(0);
-}
-
+/* Adjust label for cream input bg */
 .form-group input:focus+label,
 .form-group input.has-value+label,
 .form-group textarea:focus+label,
@@ -1155,21 +1175,36 @@ footer a {
     font-size: 12px;
     color: var(--color-accent);
     transform: translateY(-50%);
+    background: #fff;
+    /* White background for floating label */
+    padding: 0 5px;
 }
 
-.form-group textarea:focus+label,
-.form-group textarea.has-value+label {
-    left: 40px;
-    top: 0;
-    transform: translateY(-50%);
-}
-
+/* Select Dropdown Label - Dynamic Floating */
 .form-group select+label {
+    top: 50%;
+    left: 45px;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: var(--color-text-light);
+    background: transparent;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+/* Float label when focused OR when a value is selected */
+.form-group select:focus+label,
+.form-group select:valid+label,
+.form-group select.has-value+label {
     top: 0;
     left: 40px;
     font-size: 12px;
-    transform: translateY(-50%);
     color: var(--color-accent);
+    background: white;
+    /* Matches input focus background */
+    transform: translateY(-50%);
+    padding: 0 5px;
 }
 
 .input-icon {
@@ -1177,8 +1212,9 @@ footer a {
     left: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: #aaa;
+    color: var(--color-text-light);
     transition: color 0.3s;
+    z-index: 2;
 }
 
 textarea+.input-icon {
@@ -1200,6 +1236,7 @@ textarea+.input-icon {
     height: 2px;
     background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
     transition: width 0.4s ease;
+    z-index: 2;
 }
 
 .form-group input:focus~.focus-border,
@@ -1262,7 +1299,7 @@ textarea+.input-icon {
     right: 15px;
     bottom: 15px;
     font-size: 11px;
-    color: #999;
+    color: var(--color-text-light);
 }
 
 /* Submit Button */
@@ -1270,7 +1307,7 @@ textarea+.input-icon {
     width: 100%;
     padding: 16px 30px;
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-forest-green) 100%);
-    color: #F5F1E8;
+    color: var(--color-secondary);
     border: none;
     border-radius: 8px;
     font-size: 16px;
@@ -1376,8 +1413,10 @@ textarea+.input-icon {
 .contact-cards {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-bottom: 25px;
+    gap: 20px;
+    /* Increased gap */
+    margin-bottom: 30px;
+    /* Increased gap */
 }
 
 .contact-card {
@@ -1387,13 +1426,16 @@ textarea+.input-icon {
     display: flex;
     align-items: flex-start;
     gap: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #E8E4DF;
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
 .contact-card:hover {
     box-shadow: 0 8px 25px rgba(26, 58, 46, 0.15);
+    border-color: var(--color-accent);
+    transform: translateY(-5px);
 }
 
 .card-icon {
@@ -1409,7 +1451,7 @@ textarea+.input-icon {
 
 .card-icon i {
     font-size: 20px;
-    color: #F5F1E8;
+    color: var(--color-secondary);
 }
 
 .card-icon.whatsapp {
@@ -1445,14 +1487,16 @@ textarea+.input-icon {
     position: relative;
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    /* Increased gap */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E8E4DF;
 }
 
 .map-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(26, 58, 46, 0.9);
+    background: rgba(26, 58, 46, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1491,64 +1535,37 @@ textarea+.input-icon {
     }
 }
 
-/* Social Links */
+/* Social Links - Hidden for now */
+/*
 .social-links {
     background: white;
     border-radius: 12px;
     padding: 25px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
-
-.social-links h4 {
-    font-size: 16px;
-    color: var(--color-primary);
-    margin-bottom: 15px;
-}
-
-.social-icons {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-}
-
+.social-links h4 { font-size: 16px; color: var(--color-primary); margin-bottom: 15px; }
+.social-icons { display: flex; justify-content: center; gap: 12px; }
 .social-icon {
-    width: 44px;
-    height: 44px;
+    width: 44px; height: 44px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 18px;
     transition: all 0.3s ease;
 }
-
-.social-icon.facebook {
-    background: #1877f2;
-}
-
-.social-icon.instagram {
-    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-}
-
-.social-icon.youtube {
-    background: #ff0000;
-}
-
-.social-icon.pinterest {
-    background: #e60023;
-}
-
-.social-icon:hover {
-    transform: translateY(-5px) scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
+.social-icon.facebook { background: #1877f2; }
+.social-icon.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.social-icon.youtube { background: #ff0000; }
+.social-icon.pinterest { background: #e60023; }
+.social-icon:hover { transform: translateY(-5px) scale(1.1); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); }
+*/
 
 /* Recent Projects Preview */
 .recent-projects-preview {
     padding: 80px 0;
     background: var(--color-secondary);
+    margin-top: 60px;
+    /* Separation */
 }
 
 .projects-grid-preview {
@@ -1563,6 +1580,7 @@ textarea+.input-icon {
     height: 250px;
     border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .preview-item img {
@@ -1675,6 +1693,7 @@ textarea+.input-icon {
 
     .contact-info-wrapper {
         position: static;
+        margin-top: 40px;
     }
 
     .contact-hero-content h2 {
@@ -1709,7 +1728,8 @@ textarea+.input-icon {
     }
 
     .contact-hero {
-        padding: 60px 0;
+        padding: 60px 0 40px;
+        margin-bottom: 40px;
     }
 
     .contact-hero-content h2 {
