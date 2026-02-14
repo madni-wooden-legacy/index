@@ -279,47 +279,41 @@ function renderProjects(items) {
     const grid = document.getElementById('collection-grid');
     const emptyState = document.getElementById('empty-state');
 
+    if (!grid) return; // Safety check
+
     grid.innerHTML = '';
 
     if (items.length === 0) {
-        emptyState.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'block';
         grid.style.display = 'none';
         return;
     } else {
-        emptyState.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'none';
         grid.style.display = 'grid';
     }
 
     items.forEach((project, index) => {
         const card = document.createElement('div');
-        // Add animation delay classes
-        card.className = `project-card animate-up`;
+        card.className = 'project-card animate-up';
         card.style.animationDelay = `${index * 0.1}s`;
 
-        // Use MEDIA object if available, otherwise fallback to images array
-        let mediaItem;
-        if (project.media && project.media.length > 0) {
-            mediaItem = project.media[0];
-        } else {
-            mediaItem = { src: project.images[0], type: 'image' };
-        }
+        // Handle Media
+        let mediaItem = (project.media && project.media.length > 0)
+            ? project.media[0]
+            : { src: project.images[0], type: 'image' };
 
         let mediaHtml = '';
         if (mediaItem.type === 'youtube') {
             const ytId = mediaItem.src;
-            mediaHtml = `<div class="video-container">
-                <img src="https://img.youtube.com/vi/${ytId}/maxresdefault.jpg" alt="${project.title}" onerror="this.src='https://img.youtube.com/vi/${ytId}/hqdefault.jpg'">
-                <div class="play-icon"><i class="fas fa-play"></i></div>
-            </div>`;
+            mediaHtml = `<img src="https://img.youtube.com/vi/${ytId}/maxresdefault.jpg" alt="${project.title}" onerror="this.src='https://img.youtube.com/vi/${ytId}/hqdefault.jpg'">`;
         } else if (mediaItem.type === 'video') {
-            const videoUrl = mediaItem.src.includes('preview') ? mediaItem.src : `https://drive.google.com/file/d/${getDriveId(mediaItem.src)}/preview`;
-            mediaHtml = `<div class="video-container">
-                <iframe src="${videoUrl}" frameborder="0" allow="autoplay" loading="lazy"></iframe>
-            </div>`;
+            const videoId = getDriveId(mediaItem.src);
+            mediaHtml = `<img src="https://drive.google.com/thumbnail?id=${videoId}&sz=w600" alt="${project.title}">`;
         } else {
             mediaHtml = `<img src="${mediaItem.src}" alt="${project.title}" loading="lazy">`;
         }
 
+        // RENDER: Only Title, No Category Span
         card.innerHTML = `
             <div class="card-img-container">
                 <a href="project.html?id=${project.id}">

@@ -135,7 +135,8 @@ img {
     padding: 20px 0;
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 2000;
+    /* Increased to stay above sticky filters */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -828,32 +829,55 @@ footer a {
 /* Apply Entrance Animation */
 .animate-up {
     animation: rotateIn3D 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    animation-delay: var(--anim-delay, 0s);
     opacity: 0;
 }
 
 .animate-up:nth-child(1) {
-    animation-delay: 0.1s;
+    --anim-delay: 0.1s;
 }
 
 .animate-up:nth-child(2) {
-    animation-delay: 0.2s;
+    --anim-delay: 0.2s;
 }
 
 .animate-up:nth-child(3) {
-    animation-delay: 0.3s;
+    --anim-delay: 0.3s;
 }
 
 .animate-up:nth-child(4) {
-    animation-delay: 0.4s;
+    --anim-delay: 0.4s;
 }
 
 .animate-up:nth-child(5) {
-    animation-delay: 0.5s;
+    --anim-delay: 0.5s;
 }
 
 .animate-up:nth-child(6) {
-    animation-delay: 0.6s;
+    --anim-delay: 0.6s;
 }
+
+/* Explicit Animation Delays for Manual Use */
+.delay-1 {
+    --anim-delay: 0.2s !important;
+}
+
+.delay-2 {
+    --anim-delay: 0.4s !important;
+}
+
+.delay-3 {
+    --anim-delay: 0.6s !important;
+}
+
+.delay-4 {
+    --anim-delay: 0.8s !important;
+}
+
+.delay-5 {
+    --anim-delay: 1.0s !important;
+}
+
 
 /* 3D Tilt Active State */
 .tilt-3d {
@@ -1814,10 +1838,7 @@ textarea+.input-icon {
 /* Filters Wrapper */
 .filters-wrapper {
     background: transparent;
-    padding: 25px 0;
-    position: sticky;
-    top: 70px;
-    z-index: 100;
+    padding: 25px 0 15px 0;
     margin-bottom: 30px;
 }
 
@@ -2149,4 +2170,67 @@ textarea+.input-icon {
         font-size: 10px;
         padding: 5px 12px;
     }
+}
+
+/* ================= "LIVE" WEBSITE EFFECTS ================= */
+
+/* 1. Gentle Floating Animation */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-10px) rotate(0.5deg);
+    }
+}
+
+/* Apply Floating to Hero Content */
+.hero-content,
+.collections-hero-content,
+.contact-hero-content {
+    /* Sequence: Entrance FIRST, then Float loops */
+    animation-name: rotateIn3D, float;
+    animation-duration: 0.8s, 6s;
+    animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1), ease-in-out;
+    animation-fill-mode: forwards, none;
+    animation-iteration-count: 1, infinite;
+    animation-delay: var(--anim-delay, 0s), calc(var(--anim-delay, 0s) + 0.8s);
+}
+
+/* 2. Moving Gradient Background Animation */
+@keyframes gradientMove {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Apply Moving Gradient to Collection Hero */
+.collections-hero {
+    background: linear-gradient(-45deg, #1a3a2e, #2d4a3e, #1a3a2e, #0f241c);
+    background-size: 400% 400%;
+    animation: gradientMove 15s ease infinite;
+}
+
+/* Apply Moving Gradient to Contact Hero */
+.contact-hero {
+    background: linear-gradient(-45deg, #1a3a2e, #2d4a3e, #1a3a2e, #0f241c);
+    background-size: 400% 400%;
+    animation: gradientMove 15s ease infinite;
+}
+
+/* Optional: Add subtle float to Section Titles */
+.section-title h3 {
+    animation: float 8s ease-in-out infinite;
+    animation-delay: 1s;
 }
