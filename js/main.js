@@ -327,7 +327,6 @@ function renderProjects(items) {
                 </a>
             </div>
             <div class="card-info">
-                <span>${capitalize(project.category)}</span>
                 <h3><a href="project.html?id=${project.id}">${project.title}</a></h3>
             </div>
         `;
