@@ -208,6 +208,7 @@ function generateProjectsData(store) {
         // FIX: Sanitize ID to be URL-safe (remove &, replace spaces with -)
         const projectId = key.replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+        const catId = cat.getId();
         const fp = getFolderFingerprint(cat);
         const sig = fp.signature;
 
@@ -227,6 +228,17 @@ function generateProjectsData(store) {
             continue;
         }
 
+        // RENAME DETECTION (Main Loop):
+        // Check if this Folder ID is already being used by an old project ID (slug)
+        Object.keys(updatedProjectsMap).forEach(oldId => {
+            if (updatedProjectsMap[oldId].driveFolderId === catId && oldId !== projectId) {
+                console.log(`🏷️ Rename detected in Drive: '${oldId}' is now '${projectId}'. Swapping...`);
+                delete updatedProjectsMap[oldId];
+                // Also remove from savedState so we re-scan the "new" project
+                delete savedState[oldId];
+            }
+        });
+
         // FORCE RESYNC OPTIMIZATION:
         // Even if we are forcing a resync, if we completed this specific category in a previous partial run of THIS batch, skip it.
         // This allows FORCE_RESYNC to work across multiple triggers without restarting from 'A' every time.
@@ -236,7 +248,8 @@ function generateProjectsData(store) {
             continue;
         }
 
-        console.log(`📂 [SYNC START] Category: ${name} (ID: ${cat.getId()})`);
+        // catId is already defined at line 211
+        console.log(`📂 [SYNC START] Category: ${name} (ID: ${catId})`);
 
         CATEGORY_COMPLETED_SUCCESSFULLY = true; // Reset for atomic tracking
 
@@ -282,6 +295,7 @@ function generateProjectsData(store) {
         if (allMedia.length) {
             updatedProjectsMap[projectId] = {
                 id: projectId,
+                driveFolderId: catId,
                 title: name,
                 category: key,
                 description: 'Exclusive collection of ' + name,
@@ -305,13 +319,29 @@ function generateProjectsData(store) {
         }
     }
 
+    // DISCOVERY TRACKING: track which folder IDs were actually found in Drive this run
+    const discoveredFolderIds = [];
+    // We already have categories loop, but we need to track what we SAW
+    // I'll add a helper to catch all folder IDs we processed
+
     // MERGE SAFETY: If we timed out (isPartial), we must ensure we don't LOSE the projects we didn't get to scan yet.
-    // We iterate through the OLD projects list and add any that are missing from our new map.
     if (STATS.isPartial) {
-        console.warn('⚠️ Partial Sync detected through time-out. Merging existing projects to prevent data loss...');
-        currentProjects.forEach(p => {
-            if (!updatedProjectsMap[p.id]) {
-                updatedProjectsMap[p.id] = p;
+        console.warn('⚠️ Partial Sync detected through time-out. Merging existing projects...');
+
+        // Map current results by folder ID for rename detection
+        const driveIdMap = {};
+        Object.values(updatedProjectsMap).forEach(p => { if (p.driveFolderId) driveIdMap[p.driveFolderId] = p; });
+
+        currentProjects.forEach(oldProject => {
+            // RENAME DETECTION logic:
+            // If an old project exists in the store but its Drive ID is already in our NEW map under a DIFFERENT project ID, 
+            // it means the folder was renamed. We do NOT merge the old ID back in.
+            const isRenamed = driveIdMap[oldProject.driveFolderId] && driveIdMap[oldProject.driveFolderId].id !== oldProject.id;
+
+            if (!updatedProjectsMap[oldProject.id] && !isRenamed) {
+                updatedProjectsMap[oldProject.id] = oldProject;
+            } else if (isRenamed) {
+                console.log(`🗑️ Renamed category detected: '${oldProject.title}' -> '${driveIdMap[oldProject.driveFolderId].title}'. Removing old entry.`);
             }
         });
     }
@@ -334,6 +364,22 @@ function generateProjectsData(store) {
             delete updatedProjectsMap[key];
         }
     });
+
+    // ORPHAN CLEANUP: If this was a FULL sync, remove projects that no longer exist in Drive
+    if (!STATS.isPartial) {
+        const discoveredDriveFolderIds = [];
+        // Re-calculate discovered IDs from the categories we just processed
+        const rootFolders = root.getFolders();
+        while (rootFolders.hasNext()) discoveredDriveFolderIds.push(rootFolders.next().getId());
+
+        Object.keys(updatedProjectsMap).forEach(key => {
+            const p = updatedProjectsMap[key];
+            if (p.driveFolderId && !discoveredDriveFolderIds.includes(p.driveFolderId)) {
+                console.warn(`🗑️ Removing orphan project: '${p.title}' (Folder no longer exists in Drive)`);
+                delete updatedProjectsMap[key];
+            }
+        });
+    }
 
     // Final Persist to Drive Store
     // Sort projects alphabetically by category name to keep the JSON clean
