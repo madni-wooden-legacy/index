@@ -2,20 +2,20 @@ name: Sync Fork
 
 on:
   schedule:
-    - cron: "*/30 * * * *"   # sync every 30 minutes
+    - cron: "*/30 * * * *"
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout fork
-        uses: actions/checkout@v4
-
-      - name: Sync with upstream
-        run: |
-          git remote add upstream https://github.com/Mohid-Abbas/MadniWoodenLegacy.git
-          git fetch upstream
-          git checkout main
-          git merge upstream/main --allow-unrelated-histories
-          git push origin main
+      - name: Sync fork
+        uses: repo-sync/github-sync@v2
+        with:
+          source_repo: "Mohid-Abbas/MadniWoodenLegacy"
+          source_branch: "main"
+          destination_branch: "main"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
