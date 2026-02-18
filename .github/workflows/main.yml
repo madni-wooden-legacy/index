@@ -11,15 +11,14 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Sync fork
-        uses: repo-sync/github-sync@v2
+        uses: actions/github-script@v7
         with:
-          source_repo: "Mohid-Abbas/MadniWoodenLegacy"
-          source_branch: "main"
-          destination_branch: "main"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.repos.mergeUpstream({
+              owner: "madni-wooden-legacy",
+              repo: "index",
+              branch: "main"
+            });
