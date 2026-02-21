@@ -2327,7 +2327,11 @@ let projects = [
           "https://lh3.googleusercontent.com/d/1NAhsQ4hYt0EYGEtdaRWpnm9D6-hvfJpL",
           "https://lh3.googleusercontent.com/d/1BR0VWk5drsYQCOj9Mjztb8MJFiQzMt5O",
           "https://lh3.googleusercontent.com/d/1q8hDEltFGbhjfQeEQ6v9RqH7ZzedNMTG",
-          "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M"
+          "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M",
+          "https://lh3.googleusercontent.com/d/1B8idvr5ouTsUr4qjP0P_Uyk3SupiQ9ZE",
+          "https://lh3.googleusercontent.com/d/1vGBdl3FiYJNxxDTtegEYRFPg2kpCzJx_",
+          "https://lh3.googleusercontent.com/d/1ToBfl-QgQnpoEvLm1naZEZ-XPqtuZrhQ",
+          "https://lh3.googleusercontent.com/d/1Tw301qMdAR4a6UzUacxB0hDDlYtVFrTS"
         ],
         "media": [
           {
@@ -2704,6 +2708,26 @@ let projects = [
             "src": "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M",
             "type": "image",
             "title": "Cloth Cabinet - 75"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1B8idvr5ouTsUr4qjP0P_Uyk3SupiQ9ZE",
+            "type": "image",
+            "title": "Cloth Cabinet - 76"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1vGBdl3FiYJNxxDTtegEYRFPg2kpCzJx_",
+            "type": "image",
+            "title": "Cloth Cabinet - 77"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1ToBfl-QgQnpoEvLm1naZEZ-XPqtuZrhQ",
+            "type": "image",
+            "title": "Cloth Cabinet - 78"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1Tw301qMdAR4a6UzUacxB0hDDlYtVFrTS",
+            "type": "image",
+            "title": "Cloth Cabinet - 79"
           }
         ]
       }
@@ -2783,7 +2807,11 @@ let projects = [
       "https://lh3.googleusercontent.com/d/1NAhsQ4hYt0EYGEtdaRWpnm9D6-hvfJpL",
       "https://lh3.googleusercontent.com/d/1BR0VWk5drsYQCOj9Mjztb8MJFiQzMt5O",
       "https://lh3.googleusercontent.com/d/1q8hDEltFGbhjfQeEQ6v9RqH7ZzedNMTG",
-      "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M"
+      "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M",
+      "https://lh3.googleusercontent.com/d/1B8idvr5ouTsUr4qjP0P_Uyk3SupiQ9ZE",
+      "https://lh3.googleusercontent.com/d/1vGBdl3FiYJNxxDTtegEYRFPg2kpCzJx_",
+      "https://lh3.googleusercontent.com/d/1ToBfl-QgQnpoEvLm1naZEZ-XPqtuZrhQ",
+      "https://lh3.googleusercontent.com/d/1Tw301qMdAR4a6UzUacxB0hDDlYtVFrTS"
     ],
     "media": [
       {
@@ -3160,6 +3188,26 @@ let projects = [
         "src": "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M",
         "type": "image",
         "title": "Cloth Cabinet - 75"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1B8idvr5ouTsUr4qjP0P_Uyk3SupiQ9ZE",
+        "type": "image",
+        "title": "Cloth Cabinet - 76"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1vGBdl3FiYJNxxDTtegEYRFPg2kpCzJx_",
+        "type": "image",
+        "title": "Cloth Cabinet - 77"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1ToBfl-QgQnpoEvLm1naZEZ-XPqtuZrhQ",
+        "type": "image",
+        "title": "Cloth Cabinet - 78"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1Tw301qMdAR4a6UzUacxB0hDDlYtVFrTS",
+        "type": "image",
+        "title": "Cloth Cabinet - 79"
       }
     ]
   },
