@@ -2327,11 +2327,7 @@ let projects = [
           "https://lh3.googleusercontent.com/d/1NAhsQ4hYt0EYGEtdaRWpnm9D6-hvfJpL",
           "https://lh3.googleusercontent.com/d/1BR0VWk5drsYQCOj9Mjztb8MJFiQzMt5O",
           "https://lh3.googleusercontent.com/d/1q8hDEltFGbhjfQeEQ6v9RqH7ZzedNMTG",
-          "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M",
-          "https://lh3.googleusercontent.com/d/1vGBdl3FiYJNxxDTtegEYRFPg2kpCzJx_",
-          "https://lh3.googleusercontent.com/d/1ToBfl-QgQnpoEvLm1naZEZ-XPqtuZrhQ",
-          "https://lh3.googleusercontent.com/d/1Tw301qMdAR4a6UzUacxB0hDDlYtVFrTS",
-          "https://lh3.googleusercontent.com/d/1B8idvr5ouTsUr4qjP0P_Uyk3SupiQ9ZE"
+          "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M"
         ],
         "media": [
           {
@@ -2708,26 +2704,6 @@ let projects = [
             "src": "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M",
             "type": "image",
             "title": "Cloth Cabinet - 75"
-          },
-          {
-            "src": "https://lh3.googleusercontent.com/d/1vGBdl3FiYJNxxDTtegEYRFPg2kpCzJx_",
-            "type": "image",
-            "title": "Cloth Cabinet - 76"
-          },
-          {
-            "src": "https://lh3.googleusercontent.com/d/1ToBfl-QgQnpoEvLm1naZEZ-XPqtuZrhQ",
-            "type": "image",
-            "title": "Cloth Cabinet - 77"
-          },
-          {
-            "src": "https://lh3.googleusercontent.com/d/1Tw301qMdAR4a6UzUacxB0hDDlYtVFrTS",
-            "type": "image",
-            "title": "Cloth Cabinet - 78"
-          },
-          {
-            "src": "https://lh3.googleusercontent.com/d/1B8idvr5ouTsUr4qjP0P_Uyk3SupiQ9ZE",
-            "type": "image",
-            "title": "Cloth Cabinet - 79"
           }
         ]
       }
@@ -2807,11 +2783,7 @@ let projects = [
       "https://lh3.googleusercontent.com/d/1NAhsQ4hYt0EYGEtdaRWpnm9D6-hvfJpL",
       "https://lh3.googleusercontent.com/d/1BR0VWk5drsYQCOj9Mjztb8MJFiQzMt5O",
       "https://lh3.googleusercontent.com/d/1q8hDEltFGbhjfQeEQ6v9RqH7ZzedNMTG",
-      "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M",
-      "https://lh3.googleusercontent.com/d/1vGBdl3FiYJNxxDTtegEYRFPg2kpCzJx_",
-      "https://lh3.googleusercontent.com/d/1ToBfl-QgQnpoEvLm1naZEZ-XPqtuZrhQ",
-      "https://lh3.googleusercontent.com/d/1Tw301qMdAR4a6UzUacxB0hDDlYtVFrTS",
-      "https://lh3.googleusercontent.com/d/1B8idvr5ouTsUr4qjP0P_Uyk3SupiQ9ZE"
+      "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M"
     ],
     "media": [
       {
@@ -3188,26 +3160,6 @@ let projects = [
         "src": "https://lh3.googleusercontent.com/d/1frHlWAP7j8PvOrYWJHh27FbJXmehuU3M",
         "type": "image",
         "title": "Cloth Cabinet - 75"
-      },
-      {
-        "src": "https://lh3.googleusercontent.com/d/1vGBdl3FiYJNxxDTtegEYRFPg2kpCzJx_",
-        "type": "image",
-        "title": "Cloth Cabinet - 76"
-      },
-      {
-        "src": "https://lh3.googleusercontent.com/d/1ToBfl-QgQnpoEvLm1naZEZ-XPqtuZrhQ",
-        "type": "image",
-        "title": "Cloth Cabinet - 77"
-      },
-      {
-        "src": "https://lh3.googleusercontent.com/d/1Tw301qMdAR4a6UzUacxB0hDDlYtVFrTS",
-        "type": "image",
-        "title": "Cloth Cabinet - 78"
-      },
-      {
-        "src": "https://lh3.googleusercontent.com/d/1B8idvr5ouTsUr4qjP0P_Uyk3SupiQ9ZE",
-        "type": "image",
-        "title": "Cloth Cabinet - 79"
       }
     ]
   },
@@ -16732,7 +16684,12 @@ let projects = [
           "https://lh3.googleusercontent.com/d/1qe-HadCAOk86e4wuxYfn0mo6tfk_N5Ih",
           "https://lh3.googleusercontent.com/d/1sAKtQuaE9IN2Dbqj6O7gLhAQ6602TTVe",
           "https://lh3.googleusercontent.com/d/19egQK7ui8pljbP_ZdrMBsPMFhxfzSq9R",
-          "https://lh3.googleusercontent.com/d/1UjxeIzyJ6YkUI0bixR5gvPj9rWOvNL9o"
+          "https://lh3.googleusercontent.com/d/1UjxeIzyJ6YkUI0bixR5gvPj9rWOvNL9o",
+          "https://lh3.googleusercontent.com/d/10aQvGXRUsXwdWW-bJl4ueXdRyI4zCxZh",
+          "https://lh3.googleusercontent.com/d/1cU197Ufh4B62hMI_b6o7eFscRoJ6hMrL",
+          "https://lh3.googleusercontent.com/d/1hdx6qcymOV5HiWJjUM7GkJ7S2qSOYBEL",
+          "https://lh3.googleusercontent.com/d/1JXQ7gwM2CHSqXNGdsjn_1K-pY4aUamF1",
+          "https://lh3.googleusercontent.com/d/1r5zVf-YbPckzXiObk0TlffvYhHkoOZRN"
         ],
         "media": [
           {
@@ -16769,6 +16726,31 @@ let projects = [
             "src": "https://lh3.googleusercontent.com/d/1UjxeIzyJ6YkUI0bixR5gvPj9rWOvNL9o",
             "type": "image",
             "title": "Laundry - 07"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/10aQvGXRUsXwdWW-bJl4ueXdRyI4zCxZh",
+            "type": "image",
+            "title": "Laundry - 08"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1cU197Ufh4B62hMI_b6o7eFscRoJ6hMrL",
+            "type": "image",
+            "title": "Laundry - 09"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1hdx6qcymOV5HiWJjUM7GkJ7S2qSOYBEL",
+            "type": "image",
+            "title": "Laundry - 10"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1JXQ7gwM2CHSqXNGdsjn_1K-pY4aUamF1",
+            "type": "image",
+            "title": "Laundry - 11"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/1r5zVf-YbPckzXiObk0TlffvYhHkoOZRN",
+            "type": "image",
+            "title": "Laundry - 12"
           }
         ]
       }
@@ -16780,7 +16762,12 @@ let projects = [
       "https://lh3.googleusercontent.com/d/1qe-HadCAOk86e4wuxYfn0mo6tfk_N5Ih",
       "https://lh3.googleusercontent.com/d/1sAKtQuaE9IN2Dbqj6O7gLhAQ6602TTVe",
       "https://lh3.googleusercontent.com/d/19egQK7ui8pljbP_ZdrMBsPMFhxfzSq9R",
-      "https://lh3.googleusercontent.com/d/1UjxeIzyJ6YkUI0bixR5gvPj9rWOvNL9o"
+      "https://lh3.googleusercontent.com/d/1UjxeIzyJ6YkUI0bixR5gvPj9rWOvNL9o",
+      "https://lh3.googleusercontent.com/d/10aQvGXRUsXwdWW-bJl4ueXdRyI4zCxZh",
+      "https://lh3.googleusercontent.com/d/1cU197Ufh4B62hMI_b6o7eFscRoJ6hMrL",
+      "https://lh3.googleusercontent.com/d/1hdx6qcymOV5HiWJjUM7GkJ7S2qSOYBEL",
+      "https://lh3.googleusercontent.com/d/1JXQ7gwM2CHSqXNGdsjn_1K-pY4aUamF1",
+      "https://lh3.googleusercontent.com/d/1r5zVf-YbPckzXiObk0TlffvYhHkoOZRN"
     ],
     "media": [
       {
@@ -16817,6 +16804,31 @@ let projects = [
         "src": "https://lh3.googleusercontent.com/d/1UjxeIzyJ6YkUI0bixR5gvPj9rWOvNL9o",
         "type": "image",
         "title": "Laundry - 07"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/10aQvGXRUsXwdWW-bJl4ueXdRyI4zCxZh",
+        "type": "image",
+        "title": "Laundry - 08"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1cU197Ufh4B62hMI_b6o7eFscRoJ6hMrL",
+        "type": "image",
+        "title": "Laundry - 09"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1hdx6qcymOV5HiWJjUM7GkJ7S2qSOYBEL",
+        "type": "image",
+        "title": "Laundry - 10"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1JXQ7gwM2CHSqXNGdsjn_1K-pY4aUamF1",
+        "type": "image",
+        "title": "Laundry - 11"
+      },
+      {
+        "src": "https://lh3.googleusercontent.com/d/1r5zVf-YbPckzXiObk0TlffvYhHkoOZRN",
+        "type": "image",
+        "title": "Laundry - 12"
       }
     ]
   },
